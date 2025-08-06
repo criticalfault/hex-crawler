@@ -1,0 +1,2 @@
+# Store directory
+This directory contains Redux store configuration, slices, and selectors.
