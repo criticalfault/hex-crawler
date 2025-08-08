@@ -1,0 +1,293 @@
+/**
+ * Projection mode styles for optimal display on projectors and streaming
+ */
+
+/* High contrast color scheme for projection */
+.app--projection-mode {
+  --projection-bg-primary: #000000;
+  --projection-bg-secondary: #1a1a1a;
+  --projection-text-primary: #ffffff;
+  --projection-text-secondary: #e0e0e0;
+  --projection-accent: #00ff00;
+  --projection-warning: #ffff00;
+  --projection-danger: #ff0000;
+  --projection-border: #444444;
+  --projection-hover: #333333;
+}
+
+/* Base projection mode styles */
+.app--projection-mode {
+  background-color: var(--projection-bg-primary) !important;
+  color: var(--projection-text-primary) !important;
+}
+
+.app--projection-mode .app-header {
+  background-color: var(--projection-bg-secondary) !important;
+  border-bottom: 3px solid var(--projection-border) !important;
+  color: var(--projection-text-primary) !important;
+}
+
+.app--projection-mode .app-header h1 {
+  color: var(--projection-text-primary) !important;
+  font-weight: 700 !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+}
+
+.app--projection-mode .mode-indicator {
+  background-color: var(--projection-bg-secondary) !important;
+  color: var(--projection-accent) !important;
+  border: 3px solid var(--projection-accent) !important;
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+.app--projection-mode .app-sidebar {
+  background-color: var(--projection-bg-secondary) !important;
+  border-right: 3px solid var(--projection-border) !important;
+  color: var(--projection-text-primary) !important;
+}
+
+.app--projection-mode .app-content {
+  background-color: var(--projection-bg-primary) !important;
+}
+
+/* Large text mode */
+.app--projection-mode.app--large-text {
+  font-size: 18px !important;
+}
+
+.app--projection-mode.app--large-text .app-header h1 {
+  font-size: 2.5rem !important;
+}
+
+.app--projection-mode.app--large-text .mode-indicator {
+  font-size: 1.3rem !important;
+  padding: 0.8rem 1.5rem !important;
+}
+
+.app--projection-mode.app--large-text button {
+  font-size: 16px !important;
+  padding: 12px 20px !important;
+  font-weight: 600 !important;
+}
+
+.app--projection-mode.app--large-text input,
+.app--projection-mode.app--large-text select,
+.app--projection-mode.app--large-text textarea {
+  font-size: 16px !important;
+  padding: 10px !important;
+}
+
+.app--projection-mode.app--large-text label {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+/* Simplified UI mode */
+.app--projection-mode.app--simplified-ui .app-sidebar {
+  width: 200px !important;
+}
+
+.app--projection-mode.app--simplified-ui .player-mode-info {
+  background-color: var(--projection-bg-secondary) !important;
+  border: 2px solid var(--projection-accent) !important;
+  color: var(--projection-text-primary) !important;
+}
+
+.app--projection-mode.app--simplified-ui .player-mode-info h3 {
+  color: var(--projection-accent) !important;
+  font-weight: 700 !important;
+}
+
+/* Hide non-essential elements in simplified mode */
+.app--projection-mode.app--simplified-ui .settings-button,
+.app--projection-mode.app--simplified-ui .map-manager-button {
+  display: none !important;
+}
+
+/* Button styles for projection */
+.app--projection-mode button {
+  background-color: var(--projection-bg-secondary) !important;
+  color: var(--projection-text-primary) !important;
+  border: 2px solid var(--projection-border) !important;
+  font-weight: 600 !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+.app--projection-mode button:hover {
+  background-color: var(--projection-hover) !important;
+  border-color: var(--projection-accent) !important;
+  color: var(--projection-accent) !important;
+  transform: scale(1.05) !important;
+}
+
+.app--projection-mode button:active {
+  transform: scale(0.98) !important;
+}
+
+/* Input styles for projection */
+.app--projection-mode input,
+.app--projection-mode select,
+.app--projection-mode textarea {
+  background-color: var(--projection-bg-secondary) !important;
+  color: var(--projection-text-primary) !important;
+  border: 2px solid var(--projection-border) !important;
+}
+
+.app--projection-mode input:focus,
+.app--projection-mode select:focus,
+.app--projection-mode textarea:focus {
+  border-color: var(--projection-accent) !important;
+  box-shadow: 0 0 0 2px rgba(0, 255, 0, 0.3) !important;
+}
+
+/* Canvas and hex grid styles for projection */
+.app--projection-mode .hex-grid-container {
+  background-color: var(--projection-bg-primary) !important;
+  border: 3px solid var(--projection-border) !important;
+}
+
+/* Modal and dialog styles for projection */
+.app--projection-mode .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+.app--projection-mode .modal-content,
+.app--projection-mode .dialog-content,
+.app--projection-mode .panel-content {
+  background-color: var(--projection-bg-secondary) !important;
+  color: var(--projection-text-primary) !important;
+  border: 3px solid var(--projection-border) !important;
+}
+
+.app--projection-mode .modal-header,
+.app--projection-mode .dialog-header,
+.app--projection-mode .panel-header {
+  background-color: var(--projection-bg-primary) !important;
+  color: var(--projection-accent) !important;
+  border-bottom: 2px solid var(--projection-border) !important;
+}
+
+/* Icon palette styles for projection */
+.app--projection-mode .icon-palette {
+  background-color: var(--projection-bg-secondary) !important;
+  border: 2px solid var(--projection-border) !important;
+}
+
+.app--projection-mode .icon-palette__category h3 {
+  color: var(--projection-accent) !important;
+  font-weight: 700 !important;
+}
+
+.app--projection-mode .icon-item {
+  background-color: var(--projection-bg-primary) !important;
+  border: 2px solid var(--projection-border) !important;
+}
+
+.app--projection-mode .icon-item:hover {
+  border-color: var(--projection-accent) !important;
+  background-color: var(--projection-hover) !important;
+  transform: scale(1.1) !important;
+}
+
+/* Player controls styles for projection */
+.app--projection-mode .player-controls {
+  background-color: var(--projection-bg-secondary) !important;
+  border: 2px solid var(--projection-border) !important;
+  color: var(--projection-text-primary) !important;
+}
+
+.app--projection-mode .player-controls h3 {
+  color: var(--projection-accent) !important;
+  font-weight: 700 !important;
+}
+
+.app--projection-mode .sight-distance-control input[type="range"] {
+  accent-color: var(--projection-accent) !important;
+}
+
+.app--projection-mode .reveal-mode-toggle {
+  background-color: var(--projection-bg-primary) !important;
+  border: 2px solid var(--projection-border) !important;
+}
+
+.app--projection-mode .reveal-mode-toggle--active {
+  background-color: var(--projection-accent) !important;
+  color: var(--projection-bg-primary) !important;
+}
+
+/* Fullscreen specific styles */
+.app--fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+}
+
+.app--fullscreen .app-header {
+  padding: 0.5rem 1rem !important;
+}
+
+.app--fullscreen .app-header h1 {
+  font-size: 1.8rem !important;
+}
+
+.app--fullscreen.app--projection-mode.app--simplified-ui .app-header {
+  display: none !important;
+}
+
+.app--fullscreen.app--projection-mode.app--simplified-ui .app-main {
+  height: 100vh !important;
+}
+
+.app--fullscreen.app--projection-mode.app--simplified-ui .app-sidebar {
+  width: 150px !important;
+}
+
+/* High contrast focus indicators */
+.app--projection-mode *:focus {
+  outline: 3px solid var(--projection-accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* Scrollbar styles for projection */
+.app--projection-mode ::-webkit-scrollbar {
+  width: 12px !important;
+  background-color: var(--projection-bg-primary) !important;
+}
+
+.app--projection-mode ::-webkit-scrollbar-thumb {
+  background-color: var(--projection-border) !important;
+  border-radius: 6px !important;
+}
+
+.app--projection-mode ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--projection-accent) !important;
+}
+
+/* Animation overrides for projection (reduce motion) */
+.app--projection-mode * {
+  animation-duration: 0.1s !important;
+  transition-duration: 0.1s !important;
+}
+
+/* Print styles for projection screenshots */
+@media print {
+  .app--projection-mode {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .app--projection-mode .app-sidebar {
+    display: none !important;
+  }
+  
+  .app--projection-mode .app-header {
+    background: white !important;
+    color: black !important;
+    border-bottom: 2px solid black !important;
+  }
+}

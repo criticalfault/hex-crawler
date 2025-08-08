@@ -1,0 +1,31 @@
+/**
+ * Map Manager Button Styles
+ */
+
+.map-manager-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.map-manager-button:hover {
+  background-color: #0056b3;
+}
+
+.map-manager-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.map-manager-button__icon {
+  flex-shrink: 0;
+}

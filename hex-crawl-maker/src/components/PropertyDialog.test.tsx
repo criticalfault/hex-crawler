@@ -130,7 +130,7 @@ describe('PropertyDialog', () => {
     it('should render all form fields', () => {
       renderWithStore(store);
       
-      expect(screen.getByLabelText('Icon Type')).toBeInTheDocument();
+      expect(screen.getByText('Icon Type')).toBeInTheDocument();
       expect(screen.getByLabelText('Icon')).toBeInTheDocument();
       expect(screen.getByLabelText('Name')).toBeInTheDocument();
       expect(screen.getByLabelText('Description')).toBeInTheDocument();
@@ -160,13 +160,16 @@ describe('PropertyDialog', () => {
       renderWithStore(store);
       
       const nameInput = screen.getByLabelText('Name');
+      // Use fireEvent to bypass maxLength restriction for testing
       const longName = 'a'.repeat(51);
-      await user.type(nameInput, longName);
+      fireEvent.change(nameInput, { target: { value: longName } });
       
       const saveButton = screen.getByText('Save');
       await user.click(saveButton);
       
-      expect(screen.getByText('Name must be 50 characters or less')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Name must be 50 characters or less')).toBeInTheDocument();
+      });
     });
   });
 

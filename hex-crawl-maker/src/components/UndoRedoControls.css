@@ -1,0 +1,363 @@
+/**
+ * Styles for UndoRedoControls component
+ */
+
+.undo-redo-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.undo-redo-controls__buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.undo-redo-button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  color: #495057;
+  min-width: 60px;
+}
+
+.undo-redo-button:hover:not(.undo-redo-button--disabled) {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.undo-redo-button:active:not(.undo-redo-button--disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.undo-redo-button--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f8f9fa;
+  border-color: #e9ecef;
+}
+
+.undo-redo-icon {
+  font-size: 18px;
+  line-height: 1;
+  font-weight: bold;
+}
+
+.undo-redo-label {
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.undo-button:hover:not(.undo-redo-button--disabled) {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.redo-button:hover:not(.undo-redo-button--disabled) {
+  background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+  border-color: #17a2b8;
+  color: #0c5460;
+}
+
+.undo-redo-controls__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #e9ecef;
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.history-count {
+  font-weight: 500;
+}
+
+.clear-history-button {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 11px;
+  text-decoration: underline;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.clear-history-button:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Keyboard shortcut indicators */
+.undo-redo-button::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 4px;
+  height: 4px;
+  background: #6c757d;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.undo-redo-button:hover::after {
+  opacity: 0.5;
+}
+
+/* Animation for successful undo/redo */
+.undo-redo-button.success-animation {
+  animation: undoRedoSuccess 0.3s ease-out;
+}
+
+@keyframes undoRedoSuccess {
+  0% {
+    transform: scale(1);
+    background-color: #f8f9fa;
+  }
+  50% {
+    transform: scale(1.05);
+    background-color: #d4edda;
+    border-color: #28a745;
+  }
+  100% {
+    transform: scale(1);
+    background-color: #f8f9fa;
+  }
+}
+
+/* Compact mode for smaller screens */
+.undo-redo-controls--compact {
+  padding: 8px;
+}
+
+.undo-redo-controls--compact .undo-redo-button {
+  padding: 6px 8px;
+  min-width: 50px;
+}
+
+.undo-redo-controls--compact .undo-redo-icon {
+  font-size: 16px;
+}
+
+.undo-redo-controls--compact .undo-redo-label {
+  font-size: 10px;
+}
+
+/* Horizontal layout */
+.undo-redo-controls--horizontal {
+  flex-direction: row;
+  align-items: center;
+}
+
+.undo-redo-controls--horizontal .undo-redo-controls__buttons {
+  margin-right: 12px;
+}
+
+.undo-redo-controls--horizontal .undo-redo-controls__info {
+  border-top: none;
+  border-left: 1px solid #e9ecef;
+  padding-top: 0;
+  padding-left: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+/* Projection mode styles */
+.app--projection-mode .undo-redo-controls {
+  background: var(--projection-bg-secondary);
+  border-color: var(--projection-border);
+  color: var(--projection-text-primary);
+}
+
+.app--projection-mode .undo-redo-button {
+  background: var(--projection-bg-primary);
+  border-color: var(--projection-border);
+  color: var(--projection-text-primary);
+}
+
+.app--projection-mode .undo-redo-button:hover:not(.undo-redo-button--disabled) {
+  background: var(--projection-hover);
+  border-color: var(--projection-accent);
+  color: var(--projection-accent);
+}
+
+.app--projection-mode .undo-button:hover:not(.undo-redo-button--disabled) {
+  background: var(--projection-hover);
+  border-color: var(--projection-warning);
+  color: var(--projection-warning);
+}
+
+.app--projection-mode .redo-button:hover:not(.undo-redo-button--disabled) {
+  background: var(--projection-hover);
+  border-color: var(--projection-accent);
+  color: var(--projection-accent);
+}
+
+.app--projection-mode .undo-redo-controls__info {
+  border-top-color: var(--projection-border);
+  color: var(--projection-text-secondary);
+}
+
+.app--projection-mode .clear-history-button {
+  color: var(--projection-danger);
+}
+
+.app--projection-mode .clear-history-button:hover {
+  background-color: rgba(255, 0, 0, 0.2);
+}
+
+/* Large text mode */
+.app--projection-mode.app--large-text .undo-redo-controls {
+  padding: 16px;
+}
+
+.app--projection-mode.app--large-text .undo-redo-button {
+  padding: 12px 16px;
+  font-size: 14px;
+  min-width: 80px;
+}
+
+.app--projection-mode.app--large-text .undo-redo-icon {
+  font-size: 22px;
+}
+
+.app--projection-mode.app--large-text .undo-redo-label {
+  font-size: 13px;
+}
+
+.app--projection-mode.app--large-text .undo-redo-controls__info {
+  font-size: 13px;
+}
+
+.app--projection-mode.app--large-text .clear-history-button {
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .undo-redo-controls {
+    border-width: 2px;
+    border-color: #000;
+  }
+  
+  .undo-redo-button {
+    border-width: 2px;
+    font-weight: 600;
+  }
+  
+  .undo-redo-button:hover:not(.undo-redo-button--disabled) {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+  }
+  
+  .undo-redo-controls__info {
+    border-top-width: 2px;
+    border-top-color: #000;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .undo-redo-controls {
+    padding: 8px;
+  }
+  
+  .undo-redo-button {
+    padding: 6px 8px;
+    min-width: 50px;
+  }
+  
+  .undo-redo-icon {
+    font-size: 16px;
+  }
+  
+  .undo-redo-label {
+    font-size: 10px;
+  }
+  
+  .undo-redo-controls__info {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .undo-redo-controls {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px;
+  }
+  
+  .undo-redo-controls__buttons {
+    margin-right: 8px;
+  }
+  
+  .undo-redo-controls__info {
+    border-top: none;
+    border-left: 1px solid #e9ecef;
+    padding-top: 0;
+    padding-left: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  
+  .undo-redo-button {
+    flex-direction: row;
+    gap: 4px;
+    padding: 4px 6px;
+    min-width: 40px;
+  }
+  
+  .undo-redo-icon {
+    font-size: 14px;
+  }
+  
+  .undo-redo-label {
+    display: none;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .undo-redo-button {
+    transition: none;
+  }
+  
+  .undo-redo-button:hover:not(.undo-redo-button--disabled) {
+    transform: none;
+  }
+  
+  .undo-redo-button:active:not(.undo-redo-button--disabled) {
+    transform: none;
+  }
+  
+  .undo-redo-button.success-animation {
+    animation: none;
+  }
+}

@@ -63,6 +63,14 @@ export const selectGridAppearance = createSelector(
     backgroundColor: '#f0f0f0',
     unexploredColor: '#cccccc',
     textSize: 12,
+    terrainColors: {
+      mountains: '#8B4513',
+      plains: '#90EE90',
+      swamps: '#556B2F',
+      water: '#4169E1',
+      desert: '#F4A460',
+    },
+    borderWidth: 1,
   }
 );
 
@@ -70,6 +78,8 @@ export const selectGridAppearance = createSelector(
 export const selectCurrentMode = (state: RootState) => state.ui.currentMode;
 export const selectSelectedHex = (state: RootState) => state.ui.selectedHex;
 export const selectIsPropertyDialogOpen = (state: RootState) => state.ui.isPropertyDialogOpen;
+export const selectIsSettingsPanelOpen = (state: RootState) => state.ui.isSettingsPanelOpen;
+export const selectIsMapManagerOpen = (state: RootState) => state.ui.isMapManagerOpen;
 export const selectIsDragging = (state: RootState) => state.ui.isDragging;
 export const selectDraggedIcon = (state: RootState) => state.ui.draggedIcon;
 export const selectShowCoordinates = (state: RootState) => state.ui.showCoordinates;
@@ -77,6 +87,8 @@ export const selectIsFullscreen = (state: RootState) => state.ui.isFullscreen;
 export const selectShowHelp = (state: RootState) => state.ui.showHelp;
 export const selectZoom = (state: RootState) => state.ui.zoom;
 export const selectPanOffset = (state: RootState) => state.ui.panOffset;
+export const selectIsProjectionMode = (state: RootState) => state.ui.isProjectionMode;
+export const selectProjectionSettings = (state: RootState) => state.ui.projectionSettings;
 
 export const selectIsGMMode = createSelector(
   [selectCurrentMode],

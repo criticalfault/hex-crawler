@@ -1,0 +1,314 @@
+/**
+ * Styles for AnimatedTransition component
+ */
+
+.animated-transition {
+  --transition-duration: 300ms;
+  --transition-delay: 0ms;
+  transition-property: opacity, transform, filter;
+  transition-duration: var(--transition-duration);
+  transition-delay: var(--transition-delay);
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fade animations */
+.animated-transition--fade.animated-transition--entering,
+.animated-transition--fade.animated-transition--exiting {
+  opacity: 0;
+}
+
+.animated-transition--fade.animated-transition--entered {
+  opacity: 1;
+}
+
+/* Scale animations */
+.animated-transition--scale.animated-transition--entering,
+.animated-transition--scale.animated-transition--exiting {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.animated-transition--scale.animated-transition--entered {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Slide animations */
+.animated-transition--slide.animated-transition--entering,
+.animated-transition--slide.animated-transition--exiting {
+  opacity: 0;
+}
+
+.animated-transition--slide.animated-transition--entered {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide directions */
+.animated-transition--slide.animated-transition--up.animated-transition--entering,
+.animated-transition--slide.animated-transition--up.animated-transition--exiting {
+  transform: translateY(20px);
+}
+
+.animated-transition--slide.animated-transition--down.animated-transition--entering,
+.animated-transition--slide.animated-transition--down.animated-transition--exiting {
+  transform: translateY(-20px);
+}
+
+.animated-transition--slide.animated-transition--left.animated-transition--entering,
+.animated-transition--slide.animated-transition--left.animated-transition--exiting {
+  transform: translateX(20px);
+}
+
+.animated-transition--slide.animated-transition--right.animated-transition--entering,
+.animated-transition--slide.animated-transition--right.animated-transition--exiting {
+  transform: translateX(-20px);
+}
+
+/* Reveal animations (for hex reveals) */
+.animated-transition--reveal.animated-transition--entering,
+.animated-transition--reveal.animated-transition--exiting {
+  opacity: 0;
+  transform: scale(0.3) rotate(180deg);
+  filter: blur(4px);
+}
+
+.animated-transition--reveal.animated-transition--entered {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  filter: blur(0px);
+}
+
+/* Hex reveal specific styling */
+.hex-reveal-animation {
+  transform-origin: center;
+}
+
+.hex-reveal-animation.animated-transition--entering {
+  animation: hexRevealPulse 0.6s ease-out;
+}
+
+@keyframes hexRevealPulse {
+  0% {
+    transform: scale(0.3) rotate(180deg);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  50% {
+    transform: scale(1.1) rotate(90deg);
+    opacity: 0.7;
+    filter: blur(2px);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+/* Mode transition animations */
+.mode-transition-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.mode-transition-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    rgba(52, 152, 219, 0.1) 0%, 
+    rgba(46, 204, 113, 0.1) 50%, 
+    rgba(155, 89, 182, 0.1) 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.mode-transition-wrapper.transitioning .mode-transition-overlay {
+  opacity: 1;
+  animation: modeTransitionSweep 0.6s ease-out;
+}
+
+@keyframes modeTransitionSweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Staggered list animations */
+.staggered-list-item {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.staggered-list-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Loading state animations */
+.loading-shimmer {
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.4) 50%, 
+    rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Projection mode adjustments */
+.app--projection-mode .animated-transition {
+  --transition-duration: 150ms; /* Faster transitions for projection */
+}
+
+.app--projection-mode .hex-reveal-animation.animated-transition--entering {
+  animation-duration: 0.3s; /* Faster hex reveals */
+}
+
+.app--projection-mode .mode-transition-wrapper.transitioning .mode-transition-overlay {
+  animation-duration: 0.3s;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .mode-transition-overlay {
+    background: linear-gradient(45deg, 
+      rgba(0, 0, 0, 0.2) 0%, 
+      rgba(255, 255, 255, 0.2) 50%, 
+      rgba(0, 0, 0, 0.2) 100%);
+  }
+  
+  .loading-shimmer {
+    background: linear-gradient(90deg, 
+      rgba(0, 0, 0, 0) 0%, 
+      rgba(0, 0, 0, 0.3) 50%, 
+      rgba(0, 0, 0, 0) 100%);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animated-transition {
+    --transition-duration: 0ms !important;
+    --transition-delay: 0ms !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .hex-reveal-animation.animated-transition--entering {
+    animation: none !important;
+  }
+  
+  .mode-transition-wrapper.transitioning .mode-transition-overlay {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  
+  .loading-shimmer {
+    animation: none !important;
+  }
+  
+  .staggered-list-item {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Focus animations */
+.focus-ring {
+  position: relative;
+}
+
+.focus-ring::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid transparent;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+  pointer-events: none;
+}
+
+.focus-ring:focus::after {
+  opacity: 1;
+  border-color: #007bff;
+  animation: focusPulse 0.6s ease-out;
+}
+
+@keyframes focusPulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Hover animations */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hover-lift:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Button press animations */
+.press-animation {
+  transition: transform 0.1s ease;
+}
+
+.press-animation:active {
+  transform: scale(0.98);
+}
+
+/* Responsive animations */
+@media (max-width: 768px) {
+  .animated-transition {
+    --transition-duration: 200ms; /* Faster on mobile */
+  }
+  
+  .hover-lift:hover {
+    transform: none; /* Disable hover effects on touch devices */
+    box-shadow: none;
+  }
+}

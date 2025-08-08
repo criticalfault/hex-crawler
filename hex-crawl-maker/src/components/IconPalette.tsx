@@ -4,7 +4,8 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { TERRAIN_ICONS, STRUCTURE_ICONS, MARKER_ICONS, IconData, DragData } from '../types/icons';
+import { TERRAIN_ICONS, STRUCTURE_ICONS, MARKER_ICONS } from '../types/icons';
+import type { IconData, DragData } from '../types/icons';
 
 const PaletteContainer = styled.div`
   width: 250px;

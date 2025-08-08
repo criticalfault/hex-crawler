@@ -12,6 +12,8 @@ interface UIState {
   currentMode: AppMode;
   selectedHex: HexCoordinate | null;
   isPropertyDialogOpen: boolean;
+  isSettingsPanelOpen: boolean;
+  isMapManagerOpen: boolean;
   isDragging: boolean;
   draggedIcon: {
     type: 'terrain' | 'landmark';
@@ -22,12 +24,20 @@ interface UIState {
   showHelp: boolean;
   zoom: number;
   panOffset: { x: number; y: number };
+  isProjectionMode: boolean;
+  projectionSettings: {
+    highContrast: boolean;
+    largeText: boolean;
+    simplifiedUI: boolean;
+  };
 }
 
 const initialState: UIState = {
   currentMode: 'gm',
   selectedHex: null,
   isPropertyDialogOpen: false,
+  isSettingsPanelOpen: false,
+  isMapManagerOpen: false,
   isDragging: false,
   draggedIcon: null,
   showCoordinates: false,
@@ -35,6 +45,12 @@ const initialState: UIState = {
   showHelp: false,
   zoom: 1,
   panOffset: { x: 0, y: 0 },
+  isProjectionMode: false,
+  projectionSettings: {
+    highContrast: true,
+    largeText: true,
+    simplifiedUI: true,
+  },
 };
 
 export const uiSlice = createSlice({
@@ -73,6 +89,32 @@ export const uiSlice = createSlice({
 
     closePropertyDialog: (state) => {
       state.isPropertyDialogOpen = false;
+    },
+
+    // Settings panel
+    openSettingsPanel: (state) => {
+      state.isSettingsPanelOpen = true;
+    },
+
+    closeSettingsPanel: (state) => {
+      state.isSettingsPanelOpen = false;
+    },
+
+    toggleSettingsPanel: (state) => {
+      state.isSettingsPanelOpen = !state.isSettingsPanelOpen;
+    },
+
+    // Map manager
+    openMapManager: (state) => {
+      state.isMapManagerOpen = true;
+    },
+
+    closeMapManager: (state) => {
+      state.isMapManagerOpen = false;
+    },
+
+    toggleMapManager: (state) => {
+      state.isMapManagerOpen = !state.isMapManagerOpen;
     },
 
     // Drag and drop
@@ -136,6 +178,19 @@ export const uiSlice = createSlice({
     updatePanOffset: (state, action: PayloadAction<{ deltaX: number; deltaY: number }>) => {
       state.panOffset.x += action.payload.deltaX;
       state.panOffset.y += action.payload.deltaY;
+    },
+
+    // Projection mode
+    toggleProjectionMode: (state) => {
+      state.isProjectionMode = !state.isProjectionMode;
+    },
+
+    setProjectionMode: (state, action: PayloadAction<boolean>) => {
+      state.isProjectionMode = action.payload;
+    },
+
+    updateProjectionSettings: (state, action: PayloadAction<Partial<UIState['projectionSettings']>>) => {
+      state.projectionSettings = { ...state.projectionSettings, ...action.payload };
     },
   },
 });

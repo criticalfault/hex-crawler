@@ -1,0 +1,240 @@
+/**
+ * Styles for ProjectionControls component
+ */
+
+.projection-controls {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.projection-controls__header h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.projection-controls__header p {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.projection-controls__main-toggle {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.projection-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.projection-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.projection-toggle__slider {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  background: #ccc;
+  border-radius: 24px;
+  transition: background 0.3s ease;
+  flex-shrink: 0;
+}
+
+.projection-toggle__slider::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.projection-toggle input:checked + .projection-toggle__slider {
+  background: #28a745;
+}
+
+.projection-toggle input:checked + .projection-toggle__slider::before {
+  transform: translateX(24px);
+}
+
+.projection-toggle__label {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.projection-controls__settings {
+  border-top: 1px solid #e9ecef;
+  padding-top: 16px;
+  margin-bottom: 16px;
+}
+
+.projection-setting {
+  margin-bottom: 12px;
+  padding: 8px 0;
+}
+
+.projection-setting label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.projection-setting input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #007bff;
+}
+
+.projection-setting small {
+  display: block;
+  color: #6c757d;
+  font-size: 12px;
+  margin-left: 24px;
+  line-height: 1.3;
+}
+
+.projection-controls__actions {
+  border-top: 1px solid #e9ecef;
+  padding-top: 16px;
+  margin-bottom: 16px;
+}
+
+.projection-button {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid #007bff;
+  background: #007bff;
+  color: white;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.projection-button:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.projection-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 123, 255, 0.3);
+}
+
+.projection-button--fullscreen {
+  background: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.projection-button--fullscreen:hover {
+  background: #5a32a3;
+  border-color: #5a32a3;
+  box-shadow: 0 2px 4px rgba(111, 66, 193, 0.3);
+}
+
+.projection-controls__shortcuts {
+  border-top: 1px solid #e9ecef;
+  padding-top: 16px;
+}
+
+.projection-controls__shortcuts h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.shortcut-item kbd {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-size: 11px;
+  color: #495057;
+  min-width: 24px;
+  text-align: center;
+}
+
+.shortcut-item span {
+  color: #6c757d;
+  flex: 1;
+  text-align: right;
+}
+
+/* Projection mode active state */
+.projection-controls--active {
+  border-color: #28a745;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+}
+
+.projection-controls--active .projection-controls__header h3 {
+  color: #28a745;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .projection-controls {
+    padding: 12px;
+  }
+  
+  .projection-controls__header h3 {
+    font-size: 14px;
+  }
+  
+  .projection-controls__header p {
+    font-size: 12px;
+  }
+  
+  .projection-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .shortcut-list {
+    display: none; /* Hide shortcuts on mobile */
+  }
+}

@@ -13,19 +13,61 @@ const STORAGE_KEYS = {
   UI_PREFERENCES: 'hex-crawl-maker-ui-preferences',
 } as const;
 
-// Helper functions for Map serialization
-const serializeMapData = (mapData: MapData): any => {
-  return {
-    ...mapData,
-    cells: Array.from(mapData.cells.entries()).map(([key, cell]) => [key, cell]),
-  };
+// Data validation functions
+const isValidMapData = (data: any): boolean => {
+  return (
+    data &&
+    typeof data.id === 'string' &&
+    typeof data.name === 'string' &&
+    data.dimensions &&
+    typeof data.dimensions.width === 'number' &&
+    typeof data.dimensions.height === 'number' &&
+    Array.isArray(data.cells) &&
+    Array.isArray(data.playerPositions) &&
+    typeof data.sightDistance === 'number' &&
+    typeof data.revealMode === 'string' &&
+    data.appearance &&
+    typeof data.appearance === 'object'
+  );
 };
 
-const deserializeMapData = (serializedData: any): MapData => {
-  return {
-    ...serializedData,
-    cells: new Map(serializedData.cells || []),
-  };
+const isValidExplorationData = (data: any): boolean => {
+  return (
+    data &&
+    Array.isArray(data.exploredHexes) &&
+    Array.isArray(data.visibleHexes) &&
+    Array.isArray(data.explorationHistory)
+  );
+};
+
+// Helper functions for Map serialization
+const serializeMapData = (mapData: MapData): any => {
+  try {
+    return {
+      ...mapData,
+      cells: Array.from(mapData.cells.entries()).map(([key, cell]) => [key, cell]),
+    };
+  } catch (error) {
+    console.warn('Failed to serialize map data:', error);
+    return null;
+  }
+};
+
+const deserializeMapData = (serializedData: any): MapData | null => {
+  try {
+    if (!isValidMapData(serializedData)) {
+      console.warn('Invalid map data structure, skipping:', serializedData);
+      return null;
+    }
+
+    return {
+      ...serializedData,
+      cells: new Map(serializedData.cells || []),
+    };
+  } catch (error) {
+    console.warn('Failed to deserialize map data:', error);
+    return null;
+  }
 };
 
 // Check if localStorage is available
@@ -44,7 +86,10 @@ const saveMapsToStorage = (maps: { [id: string]: MapData }) => {
   try {
     const serializedMaps: { [id: string]: any } = {};
     Object.entries(maps).forEach(([id, mapData]) => {
-      serializedMaps[id] = serializeMapData(mapData);
+      const serialized = serializeMapData(mapData);
+      if (serialized) {
+        serializedMaps[id] = serialized;
+      }
     });
     localStorage.setItem(STORAGE_KEYS.MAPS, JSON.stringify(serializedMaps));
   } catch (error) {
@@ -73,7 +118,7 @@ const saveExplorationState = (exploration: any) => {
     const serializedExploration = {
       exploredHexes: Array.from(exploration.exploredHexes),
       visibleHexes: Array.from(exploration.visibleHexes),
-      explorationHistory: exploration.explorationHistory,
+      explorationHistory: exploration.explorationHistory || [],
     };
     localStorage.setItem(STORAGE_KEYS.EXPLORATION, JSON.stringify(serializedExploration));
   } catch (error) {
@@ -106,12 +151,21 @@ export const loadMapsFromStorage = (): { [id: string]: MapData } => {
       const serializedMaps = JSON.parse(stored);
       const maps: { [id: string]: MapData } = {};
       Object.entries(serializedMaps).forEach(([id, serializedData]) => {
-        maps[id] = deserializeMapData(serializedData);
+        const deserializedMap = deserializeMapData(serializedData);
+        if (deserializedMap) {
+          maps[id] = deserializedMap;
+        }
       });
       return maps;
     }
   } catch (error) {
-    console.warn('Failed to load maps from localStorage:', error);
+    console.warn('Failed to load maps from localStorage, clearing corrupted data:', error);
+    // Clear corrupted data
+    try {
+      localStorage.removeItem(STORAGE_KEYS.MAPS);
+    } catch (clearError) {
+      console.warn('Failed to clear corrupted map data:', clearError);
+    }
   }
   return {};
 };
@@ -140,14 +194,24 @@ export const loadExplorationState = () => {
     const stored = localStorage.getItem(STORAGE_KEYS.EXPLORATION);
     if (stored) {
       const data = JSON.parse(stored);
-      return {
-        exploredHexes: new Set(data.exploredHexes || []),
-        visibleHexes: new Set(data.visibleHexes || []),
-        explorationHistory: data.explorationHistory || [],
-      };
+      if (isValidExplorationData(data)) {
+        return {
+          exploredHexes: new Set(data.exploredHexes || []),
+          visibleHexes: new Set(data.visibleHexes || []),
+          explorationHistory: data.explorationHistory || [],
+        };
+      } else {
+        console.warn('Invalid exploration data structure, using defaults');
+      }
     }
   } catch (error) {
-    console.warn('Failed to load exploration state from localStorage:', error);
+    console.warn('Failed to load exploration state from localStorage, clearing corrupted data:', error);
+    // Clear corrupted data
+    try {
+      localStorage.removeItem(STORAGE_KEYS.EXPLORATION);
+    } catch (clearError) {
+      console.warn('Failed to clear corrupted exploration data:', clearError);
+    }
   }
   return {
     exploredHexes: new Set(),
@@ -170,6 +234,23 @@ export const loadUIPreferences = () => {
   return {};
 };
 
+// Auto-save functionality
+let autoSaveTimeout: NodeJS.Timeout | null = null;
+
+const scheduleAutoSave = (state: any) => {
+  // Clear existing timeout
+  if (autoSaveTimeout) {
+    clearTimeout(autoSaveTimeout);
+  }
+
+  // Schedule auto-save after 2 seconds of inactivity
+  autoSaveTimeout = setTimeout(() => {
+    saveMapsToStorage(state.map.savedMaps);
+    saveCurrentMapId(state.map.currentMap?.id || null);
+    saveExplorationState(state.exploration);
+  }, 2000);
+};
+
 // Middleware
 export const localStorageMiddleware = (store: any) => (next: any) => (action: any) => {
   const result = next(action);
@@ -177,14 +258,21 @@ export const localStorageMiddleware = (store: any) => (next: any) => (action: an
 
   // Save state changes to localStorage based on action type
   if (action.type.startsWith('map/')) {
-    // Save maps when map state changes
-    saveMapsToStorage(state.map.savedMaps);
-    saveCurrentMapId(state.map.currentMap?.id || null);
+    // Immediate save for critical map operations
+    if (action.type === 'map/createNewMap' || 
+        action.type === 'map/deleteMap' || 
+        action.type === 'map/loadMap') {
+      saveMapsToStorage(state.map.savedMaps);
+      saveCurrentMapId(state.map.currentMap?.id || null);
+    } else {
+      // Auto-save for other map changes
+      scheduleAutoSave(state);
+    }
   }
 
   if (action.type.startsWith('exploration/')) {
-    // Save exploration state when exploration changes
-    saveExplorationState(state.exploration);
+    // Auto-save exploration state changes
+    scheduleAutoSave(state);
   }
 
   if (action.type.startsWith('ui/') && (

@@ -37,6 +37,14 @@ export interface GridAppearance {
   backgroundColor: string;
   unexploredColor: string;
   textSize: number;
+  terrainColors: {
+    mountains: string;
+    plains: string;
+    swamps: string;
+    water: string;
+    desert: string;
+  };
+  borderWidth: number;
 }
 
 export type RevealMode = 'permanent' | 'lineOfSight';

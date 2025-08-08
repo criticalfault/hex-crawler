@@ -1,0 +1,29 @@
+/**
+ * Settings button styles
+ */
+
+.settings-button-trigger {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+}
+
+.settings-button-trigger:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+}
+
+.settings-button-trigger:active {
+  transform: translateY(0);
+  background: #dee2e6;
+}

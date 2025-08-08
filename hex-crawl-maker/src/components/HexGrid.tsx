@@ -11,12 +11,21 @@ import {
   selectZoom,
   selectPanOffset,
   selectSelectedHex,
-  selectShowCoordinates
+  selectShowCoordinates,
+  selectHexVisibility,
+  selectIsGMMode,
+  selectIsPlayerMode,
+  selectPlayerPositions,
+  selectSightDistance,
+  selectIsProjectionMode,
+  selectProjectionSettings
 } from '../store/selectors';
-import { uiActions, mapActions, useAppDispatch, useAppSelector } from '../store';
+import { uiActions, mapActions, explorationActions, useAppDispatch, useAppSelector, store } from '../store';
 import { 
   hexToPixel, 
-  pixelToHex
+  pixelToHex,
+  hexesInRange,
+  hexEquals
 } from '../utils/hexCoordinates';
 import { hexCellUtils } from './HexCell';
 import type { HexCoordinate, PixelCoordinate, HexCell } from '../types/hex';
@@ -43,10 +52,16 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
   const appearance = useAppSelector(selectGridAppearance);
   const mapCells = useAppSelector(selectMapCells);
   const currentMode = useAppSelector(selectCurrentMode);
+  const isGMMode = useAppSelector(selectIsGMMode);
+  const isPlayerMode = useAppSelector(selectIsPlayerMode);
   const zoom = useAppSelector(selectZoom);
   const panOffset = useAppSelector(selectPanOffset);
   const selectedHex = useAppSelector(selectSelectedHex);
   const showCoordinates = useAppSelector(selectShowCoordinates);
+  const playerPositions = useAppSelector(selectPlayerPositions);
+  const sightDistance = useAppSelector(selectSightDistance);
+  const isProjectionMode = useAppSelector(selectIsProjectionMode);
+  const projectionSettings = useAppSelector(selectProjectionSettings);
 
   // Handle canvas resize
   const handleResize = useCallback(() => {
@@ -160,10 +175,10 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     // Convert to world coordinates
     const worldCoord = screenToWorld(screenCoord);
     
-    // Offset to center of grid
+    // Offset to center of grid and apply reverse positioning offset
     const offsetCoord = {
-      x: worldCoord.x - canvasSize.width / 2,
-      y: worldCoord.y - canvasSize.height / 2
+      x: worldCoord.x - canvasSize.width / 2 - 10, // Reverse the +10 offset
+      y: worldCoord.y - canvasSize.height / 2 + 5   // Reverse the -5 offset
     };
     
     return pixelToHex(offsetCoord, appearance.hexSize);
@@ -222,6 +237,34 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     );
   }, [iconCache]);
 
+  // Draw player token on a hex
+  const drawPlayerToken = useCallback((
+    ctx: CanvasRenderingContext2D,
+    center: PixelCoordinate,
+    playerIndex: number,
+    hexSize: number
+  ) => {
+    const tokenSize = hexSize * 0.4;
+    const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff', '#44ffff'];
+    const color = colors[playerIndex % colors.length];
+    
+    // Draw player token circle
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, tokenSize / 2, 0, 2 * Math.PI);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw player number
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${Math.max(10, tokenSize * 0.6)}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText((playerIndex + 1).toString(), center.x, center.y);
+  }, []);
+
   // Main render function
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -250,11 +293,34 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
       if (!isHexInBounds(hex)) return;
       
       // Get pixel position for this hex
-      const pixelPos = hexToPixel(hex, appearance.hexSize);
+      const basePixelPos = hexToPixel(hex, appearance.hexSize);
+      
+      // Apply positioning offset to fix hex alignment
+      const pixelPos = {
+        x: basePixelPos.x + 10, // Move right by 10 pixels
+        y: basePixelPos.y - 5   // Move up by 5 pixels
+      };
       
       // Check if hex has content
       const hexKey = `${hex.q},${hex.r}`;
       const hexCell = mapCells.get(hexKey);
+
+      // Check hex visibility based on current mode
+      const visibility = selectHexVisibility(hex)(store.getState());
+      
+      // In player mode, don't render hexes that shouldn't be shown
+      if (isPlayerMode && !visibility.shouldShow) {
+        // Draw unexplored hex (darker/grayed out)
+        drawHexagon(
+          ctx,
+          pixelPos,
+          appearance.hexSize,
+          appearance.unexploredColor,
+          '#999999',
+          appearance.borderWidth
+        );
+        return;
+      }
 
       // Check for hover, selection, and drag over states
       const isHovered = hoveredHex && hoveredHex.q === hex.q && hoveredHex.r === hex.r;
@@ -280,7 +346,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
       
       const strokeWidth = hexCellUtils.getHexStrokeWidth(
         isHovered || isDragOver,
-        isSelected
+        isSelected,
+        appearance.borderWidth
       );
       
       // Special styling for drag over state
@@ -288,25 +355,52 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
       const actualStrokeColor = isDragOver ? '#007bff' : strokeColor;
       const actualStrokeWidth = isDragOver ? 3 : strokeWidth;
       
+      // In player mode, add visual indication for exploration state
+      let finalFillColor = actualFillColor;
+      if (isPlayerMode) {
+        if (visibility.isExplored && !visibility.isCurrentlyVisible) {
+          // Previously explored but not currently visible (for line-of-sight mode)
+          finalFillColor = `${actualFillColor}88`; // Add transparency
+        } else if (visibility.isCurrentlyVisible) {
+          // Currently visible - use normal colors
+          finalFillColor = actualFillColor;
+        }
+      }
+      
       // Draw the hexagon
       drawHexagon(
         ctx,
         pixelPos,
         appearance.hexSize,
-        actualFillColor,
+        finalFillColor,
         actualStrokeColor,
         actualStrokeWidth
       );
       
-      // Draw icon if hex has content
-      if (hexCell && (hexCell.terrain || hexCell.landmark)) {
+      // Draw icon if hex has content and is visible
+      if (hexCell && (hexCell.terrain || hexCell.landmark) && visibility.shouldShow) {
+        // In player mode, make icons slightly transparent if not currently visible
+        if (isPlayerMode && visibility.isExplored && !visibility.isCurrentlyVisible) {
+          ctx.globalAlpha = 0.6;
+        }
+        
         drawHexIcon(ctx, pixelPos, hexCell, appearance.hexSize);
+        
+        // Reset alpha
+        ctx.globalAlpha = 1.0;
       }
+
+      // Draw player tokens if any players are on this hex
+      playerPositions.forEach((playerPos, index) => {
+        if (hexEquals(playerPos, hex)) {
+          drawPlayerToken(ctx, pixelPos, index, appearance.hexSize);
+        }
+      });
       
-      // Draw hex coordinates if enabled or in debug mode
+      // Draw hex coordinates if enabled or in debug mode (only in GM mode or if explicitly enabled)
       const isDevelopment = import.meta.env?.DEV || false;
-      if (showCoordinates || isDevelopment) {
-        ctx.fillStyle = '#666';
+      if ((showCoordinates || isDevelopment) && (isGMMode || showCoordinates)) {
+        ctx.fillStyle = isPlayerMode ? '#999' : '#666';
         ctx.font = `${Math.max(8, appearance.textSize * 0.7)}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -323,14 +417,18 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     generateGridHexes, 
     isHexInBounds, 
     appearance, 
-    currentMode, 
+    currentMode,
+    isGMMode,
+    isPlayerMode,
     mapCells, 
     drawHexagon,
     drawHexIcon,
+    drawPlayerToken,
     hoveredHex,
     selectedHex,
     showCoordinates,
-    dragOverHex
+    dragOverHex,
+    playerPositions
   ]);
 
   // Render when dependencies change
@@ -338,20 +436,94 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     render();
   }, [render]);
 
+  // Update player visibility when positions change
+  const updatePlayerVisibility = useCallback((positions: HexCoordinate[], distance: number) => {
+    if (positions.length === 0) {
+      dispatch(explorationActions.clearVisibleHexes());
+      return;
+    }
+
+    // Calculate all hexes within sight distance of any player
+    const visibleHexes = new Set<string>();
+    const exploredHexes = new Set<string>();
+
+    positions.forEach(playerPos => {
+      const hexesInSight = hexesInRange(playerPos, distance);
+      hexesInSight.forEach(hex => {
+        const key = `${hex.q},${hex.r}`;
+        visibleHexes.add(key);
+        exploredHexes.add(key);
+      });
+    });
+
+    // Update visible hexes for current sight
+    dispatch(explorationActions.setVisibleHexes(Array.from(visibleHexes).map(key => {
+      const [q, r] = key.split(',').map(Number);
+      return { q, r };
+    })));
+
+    // Mark hexes as explored
+    dispatch(explorationActions.exploreHexes(Array.from(exploredHexes).map(key => {
+      const [q, r] = key.split(',').map(Number);
+      return { q, r };
+    })));
+  }, [dispatch]);
+
   // Mouse event handlers
   const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     if (event.button === 0) { // Left click
       const hex = getHexFromMouse(event);
       if (hex && isHexInBounds(hex)) {
-        // Handle hex selection
-        dispatch(uiActions.selectHex(hex));
+        if (isPlayerMode) {
+          // In player mode, handle player movement
+          const existingPlayerIndex = playerPositions.findIndex(pos => hexEquals(pos, hex));
+          
+          if (existingPlayerIndex >= 0) {
+            // If clicking on an existing player, remove it
+            dispatch(mapActions.removePlayerPosition(existingPlayerIndex));
+            const remainingPositions = playerPositions.filter((_, i) => i !== existingPlayerIndex);
+            updatePlayerVisibility(remainingPositions, sightDistance);
+          } else {
+            // If clicking on an empty hex, add a new player or move the first player
+            if (playerPositions.length === 0) {
+              // Add first player
+              dispatch(mapActions.addPlayerPosition(hex));
+              updatePlayerVisibility([hex], sightDistance);
+            } else {
+              // Move the first player (or add a new one if shift is held)
+              if (event.shiftKey) {
+                // Add new player when shift is held
+                dispatch(mapActions.addPlayerPosition(hex));
+                const newPositions = [...playerPositions, hex];
+                updatePlayerVisibility(newPositions, sightDistance);
+              } else {
+                // Move the first player
+                const newPositions = [hex, ...playerPositions.slice(1)];
+                dispatch(mapActions.updatePlayerPositions(newPositions));
+                updatePlayerVisibility(newPositions, sightDistance);
+              }
+            }
+          }
+        } else {
+          // In GM mode, handle hex selection and editing
+          dispatch(uiActions.selectHex(hex));
+          
+          // Check if this hex has content (terrain or landmark) and open property dialog
+          const hexKey = `${hex.q},${hex.r}`;
+          const hexCell = mapCells.get(hexKey);
+          
+          if (hexCell && (hexCell.terrain || hexCell.landmark)) {
+            // Hex has content, open property dialog for editing
+            dispatch(uiActions.openPropertyDialog(hex));
+          }
+        }
       }
     } else if (event.button === 1 || event.button === 2) { // Middle or right click for panning
       setIsPanning(true);
       setLastPanPoint({ x: event.clientX, y: event.clientY });
       event.preventDefault();
     }
-  }, [getHexFromMouse, isHexInBounds, dispatch]);
+  }, [getHexFromMouse, isHexInBounds, dispatch, isPlayerMode, playerPositions, sightDistance, updatePlayerVisibility]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     if (isPanning && lastPanPoint) {
@@ -448,8 +620,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     
     const worldCoord = screenToWorld(screenCoord);
     const offsetCoord = {
-      x: worldCoord.x - canvasSize.width / 2,
-      y: worldCoord.y - canvasSize.height / 2
+      x: worldCoord.x - canvasSize.width / 2 - 10, // Reverse the +10 offset
+      y: worldCoord.y - canvasSize.height / 2 + 5   // Reverse the -5 offset
     };
     
     const hex = pixelToHex(offsetCoord, appearance.hexSize);
@@ -500,8 +672,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
       
       const worldCoord = screenToWorld(screenCoord);
       const offsetCoord = {
-        x: worldCoord.x - canvasSize.width / 2,
-        y: worldCoord.y - canvasSize.height / 2
+        x: worldCoord.x - canvasSize.width / 2 - 10, // Reverse the +10 offset
+        y: worldCoord.y - canvasSize.height / 2 + 5   // Reverse the -5 offset
       };
       
       const hex = pixelToHex(offsetCoord, appearance.hexSize);

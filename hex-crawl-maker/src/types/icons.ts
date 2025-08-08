@@ -2,7 +2,7 @@
  * Icon-related types and data structures
  */
 
-import { TerrainType, LandmarkType } from './hex';
+import type { TerrainType, LandmarkType } from './hex';
 
 export interface IconData {
   id: string;

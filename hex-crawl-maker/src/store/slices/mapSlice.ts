@@ -34,6 +34,14 @@ const createDefaultMap = (name: string, dimensions: { width: number; height: num
     backgroundColor: '#f0f0f0',
     unexploredColor: '#cccccc',
     textSize: 12,
+    terrainColors: {
+      mountains: '#8B4513',
+      plains: '#90EE90',
+      swamps: '#556B2F',
+      water: '#4169E1',
+      desert: '#F4A460',
+    },
+    borderWidth: 1,
   },
 });
 

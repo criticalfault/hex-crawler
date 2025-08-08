@@ -104,7 +104,11 @@ export const PropertyDialog: React.FC<PropertyDialogProps> = () => {
 
   // Handle form submission
   const handleSave = () => {
-    if (!validateForm() || !selectedHex) return;
+    if (!selectedHex) return;
+    
+    if (!validateForm()) {
+      return; // Don't close dialog if validation fails
+    }
     
     // Prepare icon data based on selection
     const iconData: {
@@ -135,6 +139,17 @@ export const PropertyDialog: React.FC<PropertyDialogProps> = () => {
     dispatch(uiActions.closePropertyDialog());
   };
 
+  // Handle clearing hex content
+  const handleClearHex = () => {
+    if (!selectedHex) return;
+    
+    // Confirm before clearing
+    if (window.confirm('Are you sure you want to clear all content from this hex? This action cannot be undone.')) {
+      dispatch(mapActions.removeIcon(selectedHex));
+      dispatch(uiActions.closePropertyDialog());
+    }
+  };
+
   // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -159,9 +174,9 @@ export const PropertyDialog: React.FC<PropertyDialogProps> = () => {
 
   return (
     <div className="property-dialog-backdrop" onClick={handleBackdropClick}>
-      <div className="property-dialog">
+      <div className="property-dialog" role="dialog" aria-labelledby="dialog-title" aria-modal="true">
         <div className="property-dialog-header">
-          <h2>Edit Hex Properties</h2>
+          <h2 id="dialog-title">Edit Hex Properties</h2>
           <p className="hex-coordinate">Hex ({selectedHex.q}, {selectedHex.r})</p>
           <button 
             className="property-dialog-close"
@@ -175,23 +190,27 @@ export const PropertyDialog: React.FC<PropertyDialogProps> = () => {
         <div className="property-dialog-content">
           {/* Icon Selection */}
           <div className="form-group">
-            <label htmlFor="icon-type">Icon Type</label>
-            <div className="icon-type-selector">
-              <button
-                type="button"
-                className={`icon-type-button ${selectedIconType === 'terrain' ? 'active' : ''}`}
-                onClick={() => handleIconTypeChange('terrain')}
-              >
-                Terrain
-              </button>
-              <button
-                type="button"
-                className={`icon-type-button ${selectedIconType === 'landmark' ? 'active' : ''}`}
-                onClick={() => handleIconTypeChange('landmark')}
-              >
-                Landmark
-              </button>
-            </div>
+            <fieldset>
+              <legend>Icon Type</legend>
+              <div className="icon-type-selector">
+                <button
+                  type="button"
+                  className={`icon-type-button ${selectedIconType === 'terrain' ? 'active' : ''}`}
+                  onClick={() => handleIconTypeChange('terrain')}
+                  aria-pressed={selectedIconType === 'terrain'}
+                >
+                  Terrain
+                </button>
+                <button
+                  type="button"
+                  className={`icon-type-button ${selectedIconType === 'landmark' ? 'active' : ''}`}
+                  onClick={() => handleIconTypeChange('landmark')}
+                  aria-pressed={selectedIconType === 'landmark'}
+                >
+                  Landmark
+                </button>
+              </div>
+            </fieldset>
           </div>
 
           <div className="form-group">
@@ -267,6 +286,16 @@ export const PropertyDialog: React.FC<PropertyDialogProps> = () => {
           >
             Cancel
           </button>
+          {currentHexCell && (currentHexCell.terrain || currentHexCell.landmark) && (
+            <button 
+              type="button" 
+              className="button button-danger"
+              onClick={handleClearHex}
+              title="Remove all content from this hex"
+            >
+              Clear Hex
+            </button>
+          )}
           <button 
             type="button" 
             className="button button-primary"

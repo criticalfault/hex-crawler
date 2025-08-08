@@ -10,6 +10,7 @@ enableMapSet();
 import { mapSlice } from './slices/mapSlice';
 import { uiSlice } from './slices/uiSlice';
 import { explorationSlice } from './slices/explorationSlice';
+import { historySlice } from './slices/historySlice';
 import { localStorageMiddleware } from './middleware/localStorage';
 
 export const store = configureStore({
@@ -17,6 +18,7 @@ export const store = configureStore({
     map: mapSlice.reducer,
     ui: uiSlice.reducer,
     exploration: explorationSlice.reducer,
+    history: historySlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -45,6 +47,7 @@ export type AppDispatch = typeof store.dispatch;
 export { mapActions } from './slices/mapSlice';
 export { uiActions } from './slices/uiSlice';
 export { explorationActions } from './slices/explorationSlice';
+export { historyActions } from './slices/historySlice';
 
 // Export selectors
 export * from './selectors';

@@ -119,24 +119,41 @@ export const hexCellUtils = {
     appearance: any,
     currentMode: 'gm' | 'player'
   ): string => {
-    // Selection takes priority
+    // Selection takes priority over all other states
     if (isSelected) return '#d4edda';
     
-    // Hover state
+    // Hover state takes priority over content/exploration states
     if (isHovered) return '#e6f3ff';
     
-    // Content-based coloring - slightly different background for hexes with content
-    if (hexCell?.terrain || hexCell?.landmark) {
-      // Slightly darker background to make icons stand out
-      return '#f8f9fa';
+    // Get base color - terrain color if terrain exists, otherwise background
+    const getBaseColor = (): string => {
+      if (hexCell?.terrain && appearance.terrainColors) {
+        return appearance.terrainColors[hexCell.terrain] || appearance.backgroundColor;
+      }
+      return appearance.backgroundColor;
+    };
+    
+    // In player mode, handle exploration states
+    if (currentMode === 'player') {
+      // Unexplored hexes get the unexplored color
+      if (!hexCell?.isExplored) {
+        return appearance.unexploredColor;
+      }
+      
+      const baseColor = getBaseColor();
+      
+      // Explored hexes that are currently visible get terrain color or normal background
+      if (hexCell.isVisible) {
+        return baseColor;
+      }
+      
+      // Explored hexes that are not currently visible (for line-of-sight mode)
+      // get a slightly dimmed version of the terrain/background color
+      return baseColor + '88'; // Add transparency
     }
     
-    // Mode-based default
-    if (currentMode === 'player' && !hexCell?.isExplored) {
-      return appearance.unexploredColor;
-    }
-    
-    return appearance.backgroundColor;
+    // In GM mode, use terrain color if available, otherwise background color
+    return getBaseColor();
   },
 
   /**
@@ -160,10 +177,11 @@ export const hexCellUtils = {
    */
   getHexStrokeWidth: (
     isHovered: boolean,
-    isSelected: boolean
+    isSelected: boolean,
+    baseBorderWidth: number = 1
   ): number => {
-    if (isSelected) return 3;
-    if (isHovered) return 2;
-    return 1;
+    if (isSelected) return Math.max(3, baseBorderWidth * 2);
+    if (isHovered) return Math.max(2, baseBorderWidth * 1.5);
+    return baseBorderWidth;
   }
 };

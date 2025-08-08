@@ -1,0 +1,186 @@
+/**
+ * Styles for ModeToggle component
+ */
+
+.mode-toggle {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.mode-toggle__header {
+  margin-bottom: 12px;
+}
+
+.mode-toggle__header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.mode-toggle__buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mode-toggle__button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #666;
+}
+
+.mode-toggle__button:hover {
+  border-color: #007bff;
+  background: #f0f8ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.mode-toggle__button--active {
+  border-color: #007bff;
+  background: #007bff;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.mode-toggle__button--active:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+.mode-toggle__icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.mode-toggle__label {
+  font-weight: 500;
+  font-size: 12px;
+  text-align: center;
+}
+
+.mode-toggle__quick-switch {
+  margin-bottom: 12px;
+}
+
+.mode-toggle__quick-button {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f8f9fa;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.mode-toggle__quick-button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+.mode-toggle__description {
+  border-top: 1px solid #e9ecef;
+  padding-top: 12px;
+}
+
+.mode-toggle__description-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #666;
+}
+
+.mode-toggle__description-text strong {
+  color: #333;
+}
+
+/* Mode-specific styling for the entire component */
+.mode-toggle--gm-mode {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #f8fff9 0%, #ffffff 100%);
+}
+
+.mode-toggle--player-mode {
+  border-color: #17a2b8;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+}
+
+/* Smooth transitions for mode changes */
+.mode-toggle * {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .mode-toggle {
+    padding: 12px;
+  }
+  
+  .mode-toggle__buttons {
+    flex-direction: column;
+  }
+  
+  .mode-toggle__button {
+    flex-direction: row;
+    justify-content: center;
+    padding: 10px 12px;
+  }
+  
+  .mode-toggle__icon {
+    margin-right: 8px;
+  }
+}
+
+/* High contrast mode for projection */
+@media (prefers-contrast: high) {
+  .mode-toggle {
+    border-width: 2px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .mode-toggle__button {
+    border-width: 3px;
+    font-weight: 600;
+  }
+  
+  .mode-toggle__button--active {
+    background: #000;
+    border-color: #000;
+    color: #fff;
+  }
+}
+
+/* Animation for mode transitions */
+@keyframes modeTransition {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.mode-toggle--transitioning {
+  animation: modeTransition 0.3s ease-out;
+}

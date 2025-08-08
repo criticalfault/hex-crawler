@@ -5,10 +5,14 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
+import { enableMapSet } from 'immer';
 import { mapSlice, mapActions } from '../store/slices/mapSlice';
 import { uiSlice, uiActions } from '../store/slices/uiSlice';
 import { explorationSlice } from '../store/slices/explorationSlice';
 import type { HexCoordinate, MapData } from '../types/hex';
+
+// Enable Immer MapSet plugin for Map and Set support
+enableMapSet();
 
 describe('PropertyDialog Integration', () => {
   let store: ReturnType<typeof configureStore>;

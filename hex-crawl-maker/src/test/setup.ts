@@ -1,5 +1,9 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import { enableMapSet } from 'immer'
+
+// Enable Immer MapSet plugin for tests
+enableMapSet()
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
