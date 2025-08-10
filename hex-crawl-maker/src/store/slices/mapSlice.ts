@@ -200,6 +200,37 @@ export const mapSlice = createSlice({
         state.savedMaps[state.currentMap.id].appearance = state.currentMap.appearance;
       }
     },
+
+    // Flood fill operations
+    applyFloodFill: (state, action: PayloadAction<{
+      hexes: HexCoordinate[];
+      terrain?: string;
+      landmark?: string;
+      clearExisting?: boolean;
+    }>) => {
+      if (state.currentMap) {
+        const { hexes, terrain, landmark, clearExisting = false } = action.payload;
+        
+        for (const hex of hexes) {
+          const key = coordToKey(hex);
+          const existingCell = state.currentMap.cells.get(key);
+          
+          const updatedCell: HexCell = {
+            coordinate: hex,
+            terrain: clearExisting ? undefined : (terrain as TerrainType ?? existingCell?.terrain),
+            landmark: clearExisting ? undefined : (landmark as LandmarkType ?? existingCell?.landmark),
+            name: clearExisting ? undefined : existingCell?.name,
+            description: clearExisting ? undefined : existingCell?.description,
+            gmNotes: clearExisting ? undefined : existingCell?.gmNotes,
+            isExplored: existingCell?.isExplored || false,
+            isVisible: existingCell?.isVisible || false,
+          };
+          
+          state.currentMap.cells.set(key, updatedCell);
+          state.savedMaps[state.currentMap.id].cells.set(key, updatedCell);
+        }
+      }
+    },
   },
 });
 

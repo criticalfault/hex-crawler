@@ -1,0 +1,195 @@
+/**
+ * Styles for BrushControls component
+ */
+
+.brush-controls {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.brush-controls-header {
+  margin-bottom: 12px;
+}
+
+.brush-mode-toggle {
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brush-mode-toggle:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+.brush-mode-toggle.active {
+  background: #28a745;
+}
+
+.brush-mode-toggle.active:hover {
+  background: #218838;
+}
+
+.brush-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brush-size-section,
+.brush-shape-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.brush-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.brush-size-buttons,
+.brush-shape-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.brush-size-button,
+.brush-shape-button {
+  background: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  text-align: center;
+}
+
+.brush-size-button:hover,
+.brush-shape-button:hover {
+  background: #dee2e6;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+}
+
+.brush-size-button.active,
+.brush-shape-button.active {
+  background: #007bff;
+  border-color: #0056b3;
+  color: white;
+}
+
+.brush-size-button.active:hover,
+.brush-shape-button.active:hover {
+  background: #0056b3;
+}
+
+.brush-shape-button {
+  font-size: 16px;
+  padding: 6px 10px;
+}
+
+.brush-instructions {
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 12px;
+}
+
+.brush-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.brush-info strong {
+  color: #0056b3;
+  font-size: 13px;
+}
+
+.current-brush-display {
+  background: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.brush-usage {
+  color: #495057;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .brush-controls {
+    padding: 8px;
+  }
+  
+  .brush-size-buttons,
+  .brush-shape-buttons {
+    justify-content: center;
+  }
+  
+  .brush-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+/* Projection mode adjustments */
+.projection-mode .brush-controls {
+  background: #1a1a1a;
+  border-color: #444;
+  color: #fff;
+}
+
+.projection-mode .brush-label {
+  color: #ccc;
+}
+
+.projection-mode .brush-size-button,
+.projection-mode .brush-shape-button {
+  background: #333;
+  border-color: #555;
+  color: #fff;
+}
+
+.projection-mode .brush-size-button:hover,
+.projection-mode .brush-shape-button:hover {
+  background: #444;
+  border-color: #666;
+}
+
+.projection-mode .brush-instructions {
+  background: #2a2a2a;
+  border-color: #555;
+  color: #ccc;
+}
+
+.projection-mode .brush-info strong {
+  color: #66b3ff;
+}

@@ -85,10 +85,21 @@ export const selectDraggedIcon = (state: RootState) => state.ui.draggedIcon;
 export const selectShowCoordinates = (state: RootState) => state.ui.showCoordinates;
 export const selectIsFullscreen = (state: RootState) => state.ui.isFullscreen;
 export const selectShowHelp = (state: RootState) => state.ui.showHelp;
+export const selectShowShortcutsOverlay = (state: RootState) => state.ui.showShortcutsOverlay;
 export const selectZoom = (state: RootState) => state.ui.zoom;
 export const selectPanOffset = (state: RootState) => state.ui.panOffset;
 export const selectIsProjectionMode = (state: RootState) => state.ui.isProjectionMode;
 export const selectProjectionSettings = (state: RootState) => state.ui.projectionSettings;
+export const selectQuickTerrainMode = (state: RootState) => state.ui.quickTerrainMode;
+export const selectSelectedQuickTerrain = (state: RootState) => state.ui.selectedQuickTerrain;
+export const selectBrushMode = (state: RootState) => state.ui.brushMode;
+export const selectBrushSize = (state: RootState) => state.ui.brushSize;
+export const selectBrushShape = (state: RootState) => state.ui.brushShape;
+export const selectBrushPreviewHexes = (state: RootState) => state.ui.brushPreviewHexes;
+export const selectFloodFillMode = (state: RootState) => state.ui.floodFillMode;
+export const selectFloodFillPreviewHexes = (state: RootState) => state.ui.floodFillPreviewHexes;
+export const selectFloodFillTargetTerrain = (state: RootState) => state.ui.floodFillTargetTerrain;
+export const selectFloodFillTargetLandmark = (state: RootState) => state.ui.floodFillTargetLandmark;
 
 export const selectIsGMMode = createSelector(
   [selectCurrentMode],

@@ -10,7 +10,9 @@ import {
   selectIsMapManagerOpen,
   selectIsProjectionMode,
   selectProjectionSettings,
-  selectIsFullscreen
+  selectIsFullscreen,
+  selectQuickTerrainMode,
+  selectShowShortcutsOverlay
 } from './store/selectors';
 import { uiActions } from './store';
 import { HexGrid } from './components/HexGrid';
@@ -25,6 +27,8 @@ import { MapManagerButton } from './components/MapManagerButton';
 import { HelpSystem } from './components/HelpSystem';
 import { UndoRedoControls } from './components/UndoRedoControls';
 import { AnimatedTransition } from './components/AnimatedTransition';
+import { GMControls } from './components/GMControls';
+import { KeyboardShortcutsOverlay } from './components/KeyboardShortcutsOverlay';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import './App.css';
 import './styles/projection.css';
@@ -39,6 +43,8 @@ function AppContent() {
   const isProjectionMode = useAppSelector(selectIsProjectionMode);
   const projectionSettings = useAppSelector(selectProjectionSettings);
   const isFullscreen = useAppSelector(selectIsFullscreen);
+  const quickTerrainMode = useAppSelector(selectQuickTerrainMode);
+  const showShortcutsOverlay = useAppSelector(selectShowShortcutsOverlay);
   
   // State for mode transition animation
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -77,6 +83,10 @@ function AppContent() {
     dispatch(uiActions.closeMapManager());
   };
 
+  const handleCloseShortcutsOverlay = () => {
+    dispatch(uiActions.setShowShortcutsOverlay(false));
+  };
+
   // Build CSS classes for app container
   const appClasses = [
     'app',
@@ -86,6 +96,7 @@ function AppContent() {
     isProjectionMode && projectionSettings.largeText && 'app--large-text',
     isProjectionMode && projectionSettings.simplifiedUI && 'app--simplified-ui',
     isTransitioning && 'app--transitioning',
+    quickTerrainMode && 'app--quick-terrain-mode',
   ].filter(Boolean).join(' ');
 
   return (
@@ -119,6 +130,7 @@ function AppContent() {
               duration={300}
             >
               <UndoRedoControls className="sidebar-undo-redo" />
+              <GMControls />
               <IconPalette />
             </AnimatedTransition>
           )}
@@ -145,6 +157,10 @@ function AppContent() {
       <SettingsPanel isOpen={isSettingsPanelOpen} onClose={handleCloseSettings} />
       <MapManager isOpen={isMapManagerOpen} onClose={handleCloseMapManager} />
       <HelpSystem />
+      <KeyboardShortcutsOverlay 
+        isVisible={showShortcutsOverlay} 
+        onClose={handleCloseShortcutsOverlay} 
+      />
     </div>
   );
 }

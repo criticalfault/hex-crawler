@@ -3,3 +3,4 @@
  */
 
 export * from './hexCoordinates';
+export * from './brushUtils';

@@ -8,6 +8,9 @@ import type { HexCoordinate } from '../../types';
 
 export type AppMode = 'gm' | 'player';
 
+export type BrushSize = 1 | 3 | 5 | 7;
+export type BrushShape = 'circle' | 'square' | 'diamond';
+
 interface UIState {
   currentMode: AppMode;
   selectedHex: HexCoordinate | null;
@@ -22,6 +25,7 @@ interface UIState {
   showCoordinates: boolean;
   isFullscreen: boolean;
   showHelp: boolean;
+  showShortcutsOverlay: boolean;
   zoom: number;
   panOffset: { x: number; y: number };
   isProjectionMode: boolean;
@@ -30,6 +34,16 @@ interface UIState {
     largeText: boolean;
     simplifiedUI: boolean;
   };
+  quickTerrainMode: boolean;
+  selectedQuickTerrain: string;
+  brushMode: boolean;
+  brushSize: BrushSize;
+  brushShape: BrushShape;
+  brushPreviewHexes: HexCoordinate[];
+  floodFillMode: boolean;
+  floodFillPreviewHexes: HexCoordinate[];
+  floodFillTargetTerrain?: string;
+  floodFillTargetLandmark?: string;
 }
 
 const initialState: UIState = {
@@ -43,6 +57,7 @@ const initialState: UIState = {
   showCoordinates: false,
   isFullscreen: false,
   showHelp: false,
+  showShortcutsOverlay: false,
   zoom: 1,
   panOffset: { x: 0, y: 0 },
   isProjectionMode: false,
@@ -51,6 +66,16 @@ const initialState: UIState = {
     largeText: true,
     simplifiedUI: true,
   },
+  quickTerrainMode: false,
+  selectedQuickTerrain: 'plains',
+  brushMode: false,
+  brushSize: 1,
+  brushShape: 'circle',
+  brushPreviewHexes: [],
+  floodFillMode: false,
+  floodFillPreviewHexes: [],
+  floodFillTargetTerrain: undefined,
+  floodFillTargetLandmark: undefined,
 };
 
 export const uiSlice = createSlice({
@@ -153,6 +178,14 @@ export const uiSlice = createSlice({
       state.showHelp = action.payload;
     },
 
+    toggleShortcutsOverlay: (state) => {
+      state.showShortcutsOverlay = !state.showShortcutsOverlay;
+    },
+
+    setShowShortcutsOverlay: (state, action: PayloadAction<boolean>) => {
+      state.showShortcutsOverlay = action.payload;
+    },
+
     // Zoom and pan
     setZoom: (state, action: PayloadAction<number>) => {
       state.zoom = Math.max(0.1, Math.min(5, action.payload));
@@ -191,6 +224,132 @@ export const uiSlice = createSlice({
 
     updateProjectionSettings: (state, action: PayloadAction<Partial<UIState['projectionSettings']>>) => {
       state.projectionSettings = { ...state.projectionSettings, ...action.payload };
+    },
+
+    // Quick terrain mode
+    toggleQuickTerrainMode: (state) => {
+      state.quickTerrainMode = !state.quickTerrainMode;
+      if (state.quickTerrainMode) {
+        // Clear selection when entering quick terrain mode
+        state.selectedHex = null;
+        state.isPropertyDialogOpen = false;
+      }
+    },
+
+    setQuickTerrainMode: (state, action: PayloadAction<boolean>) => {
+      state.quickTerrainMode = action.payload;
+      if (action.payload) {
+        state.selectedHex = null;
+        state.isPropertyDialogOpen = false;
+      }
+    },
+
+    setSelectedQuickTerrain: (state, action: PayloadAction<string>) => {
+      state.selectedQuickTerrain = action.payload;
+    },
+
+    // Brush mode
+    toggleBrushMode: (state) => {
+      state.brushMode = !state.brushMode;
+      if (state.brushMode) {
+        // Clear selection when entering brush mode
+        state.selectedHex = null;
+        state.isPropertyDialogOpen = false;
+        // Enable quick terrain mode if not already enabled
+        if (!state.quickTerrainMode) {
+          state.quickTerrainMode = true;
+        }
+      } else {
+        // Clear brush preview when exiting brush mode
+        state.brushPreviewHexes = [];
+      }
+    },
+
+    setBrushMode: (state, action: PayloadAction<boolean>) => {
+      state.brushMode = action.payload;
+      if (action.payload) {
+        state.selectedHex = null;
+        state.isPropertyDialogOpen = false;
+        if (!state.quickTerrainMode) {
+          state.quickTerrainMode = true;
+        }
+      } else {
+        state.brushPreviewHexes = [];
+      }
+    },
+
+    setBrushSize: (state, action: PayloadAction<BrushSize>) => {
+      state.brushSize = action.payload;
+    },
+
+    setBrushShape: (state, action: PayloadAction<BrushShape>) => {
+      state.brushShape = action.payload;
+    },
+
+    setBrushPreviewHexes: (state, action: PayloadAction<HexCoordinate[]>) => {
+      state.brushPreviewHexes = action.payload;
+    },
+
+    clearBrushPreview: (state) => {
+      state.brushPreviewHexes = [];
+    },
+
+    // Flood fill mode
+    toggleFloodFillMode: (state) => {
+      state.floodFillMode = !state.floodFillMode;
+      if (state.floodFillMode) {
+        // Clear selection when entering flood fill mode
+        state.selectedHex = null;
+        state.isPropertyDialogOpen = false;
+        // Enable quick terrain mode if not already enabled
+        if (!state.quickTerrainMode) {
+          state.quickTerrainMode = true;
+        }
+        // Disable brush mode when enabling flood fill
+        if (state.brushMode) {
+          state.brushMode = false;
+          state.brushPreviewHexes = [];
+        }
+      } else {
+        // Clear flood fill preview when exiting flood fill mode
+        state.floodFillPreviewHexes = [];
+        state.floodFillTargetTerrain = undefined;
+        state.floodFillTargetLandmark = undefined;
+      }
+    },
+
+    setFloodFillMode: (state, action: PayloadAction<boolean>) => {
+      state.floodFillMode = action.payload;
+      if (action.payload) {
+        state.selectedHex = null;
+        state.isPropertyDialogOpen = false;
+        if (!state.quickTerrainMode) {
+          state.quickTerrainMode = true;
+        }
+        if (state.brushMode) {
+          state.brushMode = false;
+          state.brushPreviewHexes = [];
+        }
+      } else {
+        state.floodFillPreviewHexes = [];
+        state.floodFillTargetTerrain = undefined;
+        state.floodFillTargetLandmark = undefined;
+      }
+    },
+
+    setFloodFillPreviewHexes: (state, action: PayloadAction<HexCoordinate[]>) => {
+      state.floodFillPreviewHexes = action.payload;
+    },
+
+    setFloodFillTarget: (state, action: PayloadAction<{ terrain?: string; landmark?: string }>) => {
+      state.floodFillTargetTerrain = action.payload.terrain;
+      state.floodFillTargetLandmark = action.payload.landmark;
+    },
+
+    clearFloodFillPreview: (state) => {
+      state.floodFillPreviewHexes = [];
+      state.floodFillTargetTerrain = undefined;
+      state.floodFillTargetLandmark = undefined;
     },
   },
 });

@@ -6,7 +6,7 @@ import React from 'react';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { selectShowHelp, selectCurrentMode, selectIsProjectionMode } from '../store/selectors';
 import { uiActions } from '../store';
-import { KEYBOARD_SHORTCUTS } from '../hooks/useKeyboardShortcuts';
+import { KEYBOARD_SHORTCUTS, TERRAIN_SHORTCUTS } from '../hooks/useKeyboardShortcuts';
 import './HelpSystem.css';
 
 export const HelpSystem: React.FC = () => {
@@ -27,27 +27,38 @@ export const HelpSystem: React.FC = () => {
 
   if (!showHelp) return null;
 
+  const terrainShortcuts = [
+    { key: '1', description: 'Mountains' },
+    { key: '2', description: 'Plains' },
+    { key: '3', description: 'Swamps' },
+    { key: '4', description: 'Water' },
+    { key: '5', description: 'Desert' },
+    { key: 'Tab', description: 'Cycle through terrain types' },
+  ];
+
   const gmModeShortcuts = [
-    { key: 'M', description: 'Switch to Player Mode' },
+    { key: 'Space', description: 'Switch to Player Mode' },
     { key: 'S', description: 'Open Settings Panel' },
     { key: 'C', description: 'Toggle Coordinate Display' },
+    { key: 'Ctrl+Z', description: 'Undo last action' },
+    { key: 'Ctrl+Y', description: 'Redo last action' },
     { key: 'Drag & Drop', description: 'Place icons from palette onto hexes' },
     { key: 'Click Hex', description: 'Edit hex properties' },
   ];
 
   const playerModeShortcuts = [
-    { key: 'M', description: 'Switch to GM Mode' },
+    { key: 'Space', description: 'Switch to GM Mode' },
     { key: 'Click Hex', description: 'Move player to hex (reveals surrounding area)' },
   ];
 
   const universalShortcuts = [
-    { key: 'H', description: 'Toggle this help panel' },
+    { key: 'F1 / ?', description: 'Toggle this help panel' },
+    { key: 'H', description: 'Toggle help panel' },
     { key: 'P', description: 'Toggle Projection Mode' },
     { key: 'F11', description: 'Toggle Fullscreen' },
-    { key: 'Space', description: 'Reset Zoom & Pan' },
     { key: '+/-', description: 'Zoom In/Out' },
     { key: 'WASD/Arrows', description: 'Pan Map' },
-    { key: 'Escape', description: 'Close Dialogs' },
+    { key: 'Escape', description: 'Cancel operations & close dialogs' },
   ];
 
   return (
@@ -74,8 +85,26 @@ export const HelpSystem: React.FC = () => {
             </div>
           </div>
 
+          {currentMode === 'gm' && (
+            <div className="help-section">
+              <h3>🎯 Quick Terrain Selection (GM Mode)</h3>
+              <div className="shortcuts-grid">
+                {terrainShortcuts.map((shortcut, index) => (
+                  <div key={index} className="shortcut-item">
+                    <kbd className="shortcut-key">{shortcut.key}</kbd>
+                    <span className="shortcut-description">{shortcut.description}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="help-note">
+                <strong>Tip:</strong> Press number keys to quickly select terrain types for painting. 
+                Use Tab to cycle through all terrain types.
+              </p>
+            </div>
+          )}
+
           <div className="help-section">
-            <h3>Current Mode: {currentMode === 'gm' ? 'GM Mode' : 'Player Mode'}</h3>
+            <h3>Current Mode: {currentMode === 'gm' ? '🎲 GM Mode' : '🗺️ Player Mode'}</h3>
             <div className="shortcuts-grid">
               {(currentMode === 'gm' ? gmModeShortcuts : playerModeShortcuts).map((shortcut, index) => (
                 <div key={index} className="shortcut-item">
@@ -140,7 +169,8 @@ export const HelpSystem: React.FC = () => {
         </div>
 
         <div className="help-panel__footer">
-          <p>Press <kbd>H</kbd> anytime to toggle this help panel</p>
+          <p>Press <kbd>F1</kbd>, <kbd>?</kbd>, or <kbd>H</kbd> anytime to toggle this help panel</p>
+          <p><strong>Pro Tip:</strong> Use <kbd>Escape</kbd> to quickly cancel any operation or close dialogs</p>
         </div>
       </div>
     </div>
