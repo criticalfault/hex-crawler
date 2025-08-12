@@ -46,6 +46,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
       borderColor: '#333333',
       backgroundColor: '#f0f0f0',
       unexploredColor: '#cccccc',
+      sightColor: '#e6e6fa',
       textSize: 12,
       terrainColors: {
         mountains: '#8B4513',
@@ -167,6 +168,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
                   type="color"
                   value={appearance.unexploredColor}
                   onChange={(e) => handleAppearanceChange({ unexploredColor: e.target.value })}
+                />
+              </div>
+              <div className="settings-row">
+                <label htmlFor="sight-color">Sight (explored, not visible):</label>
+                <input
+                  id="sight-color"
+                  type="color"
+                  value={appearance.sightColor}
+                  onChange={(e) => handleAppearanceChange({ sightColor: e.target.value })}
                 />
               </div>
 

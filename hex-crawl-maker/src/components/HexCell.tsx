@@ -148,8 +148,8 @@ export const hexCellUtils = {
       }
       
       // Explored hexes that are not currently visible (for line-of-sight mode)
-      // get a slightly dimmed version of the terrain/background color
-      return baseColor + '88'; // Add transparency
+      // get the sight color to distinguish from unexplored
+      return appearance.sightColor;
     }
     
     // In GM mode, use terrain color if available, otherwise background color

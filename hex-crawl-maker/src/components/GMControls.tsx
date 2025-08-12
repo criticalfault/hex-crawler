@@ -9,6 +9,10 @@ import { selectQuickTerrainMode, selectSelectedQuickTerrain } from '../store/sel
 import { TERRAIN_ICONS } from '../types/icons';
 import { BrushControls } from './BrushControls';
 import { FloodFillControls } from './FloodFillControls';
+import { SelectionTool } from './SelectionTool';
+import { PatternLibrary } from './PatternLibrary';
+import { ExportButton } from './ExportButton';
+import { TemplateButton } from './TemplateButton';
 import './GMControls.css';
 
 export const GMControls: React.FC = () => {
@@ -33,6 +37,20 @@ export const GMControls: React.FC = () => {
       </div>
 
       <div className="control-section">
+        <TemplateButton />
+        <div className="control-description">
+          Apply terrain templates or generate procedural biomes
+        </div>
+      </div>
+
+      <div className="control-section">
+        <ExportButton />
+        <div className="control-description">
+          Export your map as high-resolution PNG or print-ready PDF
+        </div>
+      </div>
+
+      <div className="control-section">
         <button 
           onClick={handleResetExploration}
           className="reset-exploration-button"
@@ -48,6 +66,10 @@ export const GMControls: React.FC = () => {
       <BrushControls />
 
       <FloodFillControls />
+
+      <SelectionTool />
+
+      <PatternLibrary />
 
       <div className="control-section">
         <div className="quick-terrain-header">

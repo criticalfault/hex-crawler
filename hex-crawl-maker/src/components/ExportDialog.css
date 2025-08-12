@@ -1,0 +1,384 @@
+/**
+ * Styles for the ExportDialog component
+ */
+
+.export-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.export-dialog {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.export-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+}
+
+.export-dialog-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.close-button:hover {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.export-dialog-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.export-options {
+  flex: 2;
+  padding: 24px;
+  overflow-y: auto;
+  border-right: 1px solid #e0e0e0;
+}
+
+.export-preview {
+  flex: 1;
+  padding: 24px;
+  background-color: #f8f9fa;
+  overflow-y: auto;
+}
+
+.option-group {
+  margin-bottom: 24px;
+}
+
+.option-group h3 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.radio-group,
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-group label,
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.radio-group label:hover,
+.checkbox-group label:hover {
+  color: #007bff;
+}
+
+.radio-group input[type="radio"],
+.checkbox-group input[type="checkbox"] {
+  margin: 0;
+}
+
+.dpi-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-dpi {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.custom-dpi input[type="number"] {
+  width: 80px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.selection-button {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.selection-button:hover {
+  background-color: #0056b3;
+}
+
+.margins-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.margin-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.margin-input label {
+  min-width: 60px;
+  font-weight: 500;
+}
+
+.margin-input input[type="number"] {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.watermark-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.watermark-config {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.watermark-config input[type="text"] {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.watermark-config select {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.watermark-config input[type="range"] {
+  width: 100%;
+}
+
+.preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-stat {
+  padding: 8px 12px;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  font-size: 0.9rem;
+}
+
+.preview-stat strong {
+  color: #333;
+}
+
+.export-dialog-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.export-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+
+.export-button.primary {
+  background-color: #28a745;
+  color: white;
+}
+
+.export-button.primary:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.export-button.secondary {
+  background-color: #007bff;
+  color: white;
+}
+
+.export-button.secondary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.export-button.cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.export-button.cancel:hover {
+  background-color: #545b62;
+}
+
+.export-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .export-dialog {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .export-dialog-content {
+    flex-direction: column;
+  }
+  
+  .export-options {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .margins-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .export-buttons {
+    flex-direction: column;
+  }
+  
+  .export-button {
+    width: 100%;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .export-dialog {
+    background: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  .export-dialog-header {
+    background-color: #1a202c;
+    border-bottom-color: #4a5568;
+  }
+  
+  .export-dialog-header h2 {
+    color: #e2e8f0;
+  }
+  
+  .close-button {
+    color: #a0aec0;
+  }
+  
+  .close-button:hover {
+    background-color: #4a5568;
+    color: #e2e8f0;
+  }
+  
+  .export-options {
+    border-right-color: #4a5568;
+  }
+  
+  .export-preview {
+    background-color: #1a202c;
+  }
+  
+  .option-group h3 {
+    color: #e2e8f0;
+  }
+  
+  .watermark-config {
+    background-color: #1a202c;
+    border-color: #4a5568;
+  }
+  
+  .watermark-config input[type="text"],
+  .watermark-config select,
+  .margin-input input[type="number"],
+  .custom-dpi input[type="number"] {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+  
+  .preview-stat {
+    background-color: #2d3748;
+    border-color: #4a5568;
+  }
+  
+  .preview-stat strong {
+    color: #e2e8f0;
+  }
+  
+  .export-dialog-footer {
+    background-color: #1a202c;
+    border-top-color: #4a5568;
+  }
+}

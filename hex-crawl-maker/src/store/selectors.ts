@@ -62,6 +62,7 @@ export const selectGridAppearance = createSelector(
     borderColor: '#333333',
     backgroundColor: '#f0f0f0',
     unexploredColor: '#cccccc',
+    sightColor: '#e6e6fa',
     textSize: 12,
     terrainColors: {
       mountains: '#8B4513',
@@ -100,6 +101,15 @@ export const selectFloodFillMode = (state: RootState) => state.ui.floodFillMode;
 export const selectFloodFillPreviewHexes = (state: RootState) => state.ui.floodFillPreviewHexes;
 export const selectFloodFillTargetTerrain = (state: RootState) => state.ui.floodFillTargetTerrain;
 export const selectFloodFillTargetLandmark = (state: RootState) => state.ui.floodFillTargetLandmark;
+
+// Copy/paste selectors
+export const selectSelectionMode = (state: RootState) => state.ui.selectionMode;
+export const selectSelectionStart = (state: RootState) => state.ui.selectionStart;
+export const selectSelectionEnd = (state: RootState) => state.ui.selectionEnd;
+export const selectSelectedRegion = (state: RootState) => state.ui.selectedRegion;
+export const selectClipboard = (state: RootState) => state.ui.clipboard;
+export const selectPastePreviewHexes = (state: RootState) => state.ui.pastePreviewHexes;
+export const selectPastePreviewPosition = (state: RootState) => state.ui.pastePreviewPosition;
 
 export const selectIsGMMode = createSelector(
   [selectCurrentMode],

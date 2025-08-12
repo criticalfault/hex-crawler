@@ -12,18 +12,50 @@ export type TerrainType =
   | 'plains'
   | 'swamps'
   | 'water'
-  | 'desert';
+  | 'desert'
+  | 'hills'
+  | 'shallowWater'
+  | 'deepWater'
+  | 'oceanWater';
 
 export type LandmarkType = 
-  | 'tower'
+  | 'village'
+  | 'hamlet'
   | 'town'
   | 'city'
+  | 'ruinsAncient'
+  | 'ruinsRecent'
+  | 'castle'
+  | 'fortress'
+  | 'watchtower'
+  | 'signalFire'
+  | 'mineEntrance'
+  | 'caveMouth'
+  | 'standingStones'
+  | 'stoneCircle'
+  | 'temple'
+  | 'shrine'
+  | 'wizardTower'
+  | 'tradingPost'
+  | 'roadhouse'
+  | 'bridge'
+  | 'ford'
+  | 'ferryCrossing'
+  | 'campsite'
+  | 'huntersLodge'
   | 'marker';
+
+export type RoadType = 
+  | 'path'
+  | 'road'
+  | 'highway';
 
 export interface HexCell {
   coordinate: HexCoordinate;
   terrain?: TerrainType;
   landmark?: LandmarkType;
+  road?: RoadType;
+  roadConnections?: ('north' | 'northeast' | 'southeast' | 'south' | 'southwest' | 'northwest')[];
   name?: string;
   description?: string;
   gmNotes?: string;
@@ -36,6 +68,7 @@ export interface GridAppearance {
   borderColor: string;
   backgroundColor: string;
   unexploredColor: string;
+  sightColor: string;
   textSize: number;
   terrainColors: {
     mountains: string;
@@ -43,6 +76,15 @@ export interface GridAppearance {
     swamps: string;
     water: string;
     desert: string;
+    hills: string;
+    shallowWater: string;
+    deepWater: string;
+    oceanWater: string;
+  };
+  roadColors: {
+    path: string;
+    road: string;
+    highway: string;
   };
   borderWidth: number;
 }

@@ -29,6 +29,11 @@ import {
   selectFloodFillPreviewHexes,
   selectFloodFillTargetTerrain,
   selectFloodFillTargetLandmark,
+  selectSelectionMode,
+  selectSelectionStart,
+  selectSelectionEnd,
+  selectSelectedRegion,
+  selectPastePreviewHexes,
 } from "../store/selectors";
 import {
   uiActions,
@@ -46,6 +51,7 @@ import {
 } from "../utils/hexCoordinates";
 import { getBrushHexes } from "../utils/brushUtils";
 import { floodFillHexes, getFloodFillPreview } from "../utils/floodFillUtils";
+import { getHexesInRectangularSelection } from "../utils/copyPasteUtils";
 import { hexCellUtils } from "./HexCell";
 import type { HexCoordinate, PixelCoordinate, HexCell } from "../types/hex";
 import type { DragData } from "../types/icons";
@@ -95,6 +101,11 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
   const floodFillPreviewHexes = useAppSelector(selectFloodFillPreviewHexes);
   const floodFillTargetTerrain = useAppSelector(selectFloodFillTargetTerrain);
   const floodFillTargetLandmark = useAppSelector(selectFloodFillTargetLandmark);
+  const selectionMode = useAppSelector(selectSelectionMode);
+  const selectionStart = useAppSelector(selectSelectionStart);
+  const selectionEnd = useAppSelector(selectSelectionEnd);
+  const selectedRegion = useAppSelector(selectSelectedRegion);
+  const pastePreviewHexes = useAppSelector(selectPastePreviewHexes);
 
   // Handle canvas resize
   const handleResize = useCallback(() => {
@@ -385,22 +396,30 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
         return;
       }
 
-      // Check for hover, selection, drag over, and brush preview states
+      // Check for hover, selection, drag over, and preview states
       const isHovered =
         hoveredHex && hoveredHex.q === hex.q && hoveredHex.r === hex.r;
       const isSelected =
         selectedHex && selectedHex.q === hex.q && selectedHex.r === hex.r;
       const isDragOver =
         dragOverHex && dragOverHex.q === hex.q && dragOverHex.r === hex.r;
-      const isBrushPreview = brushPreviewHexes.some(
-        (brushHex) => brushHex.q === hex.q && brushHex.r === hex.r
+
+      // Check for preview states
+      const isBrushPreview = brushPreviewHexes.some(previewHex => 
+        previewHex && previewHex.q === hex.q && previewHex.r === hex.r
       );
-      const isFloodFillPreview = floodFillPreviewHexes.some(
-        (floodHex) => floodHex.q === hex.q && floodHex.r === hex.r
+      const isFloodFillPreview = floodFillPreviewHexes.some(previewHex => 
+        previewHex && previewHex.q === hex.q && previewHex.r === hex.r
+      );
+      const isPastePreview = pastePreviewHexes.some(previewHex => 
+        previewHex && previewHex.q === hex.q && previewHex.r === hex.r
+      );
+      const isInSelectedRegion = selectedRegion && selectedRegion.some(regionHex => 
+        regionHex && regionHex.q === hex.q && regionHex.r === hex.r
       );
 
       // Use utility functions to determine appearance
-      const isPreview = isBrushPreview || isFloodFillPreview;
+      const isPreview = isBrushPreview || isFloodFillPreview || isPastePreview;
       const fillColor = hexCellUtils.getHexFillColor(
         hexCell || null,
         isHovered || isDragOver || isPreview,
@@ -436,6 +455,16 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
         // Brush preview styling
         actualFillColor = "rgba(40, 167, 69, 0.2)";
         actualStrokeColor = "#28a745";
+        actualStrokeWidth = 2;
+      } else if (isInSelectedRegion && selectionMode && isGMMode) {
+        // Selection region styling
+        actualFillColor = "rgba(255, 193, 7, 0.3)";
+        actualStrokeColor = "#ffc107";
+        actualStrokeWidth = 2;
+      } else if (isPastePreview && isGMMode) {
+        // Paste preview styling
+        actualFillColor = "rgba(23, 162, 184, 0.2)";
+        actualStrokeColor = "#17a2b8";
         actualStrokeWidth = 2;
       }
 
@@ -529,6 +558,9 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     floodFillPreviewHexes,
     brushMode,
     floodFillMode,
+    selectionMode,
+    selectedRegion,
+    pastePreviewHexes,
   ]);
 
   // Render when dependencies change
@@ -623,7 +655,19 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
             }
           } else {
             // In GM mode, handle hex selection and editing
-            if (quickTerrainMode) {
+            if (selectionMode) {
+              // Selection mode - handle rectangular selection
+              if (!selectionStart) {
+                // Start new selection
+                dispatch(uiActions.startSelection(hex));
+              } else {
+                // Complete selection
+                const selectedHexes = getHexesInRectangularSelection(selectionStart, hex);
+                const validHexes = selectedHexes.filter(isHexInBounds);
+                dispatch(uiActions.setSelectedRegion(validHexes));
+                dispatch(uiActions.updateSelection(hex));
+              }
+            } else if (quickTerrainMode) {
               // Quick terrain placement mode
               const hexKey = `${hex.q},${hex.r}`;
               const hexCell = mapCells.get(hexKey);
@@ -778,6 +822,21 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
               const validBrushHexes = brushHexes.filter(isHexInBounds);
               dispatch(uiActions.setBrushPreviewHexes(validBrushHexes));
             }
+
+            // Update selection preview if in selection mode
+            if (isGMMode && selectionMode && selectionStart) {
+              const selectedHexes = getHexesInRectangularSelection(selectionStart, hex);
+              const validHexes = selectedHexes.filter(isHexInBounds);
+              dispatch(uiActions.setSelectedRegion(validHexes));
+            }
+
+            // Update paste preview if clipboard has content and not in other modes
+            if (isGMMode && !selectionMode && !brushMode && !floodFillMode && !quickTerrainMode) {
+              // Import paste preview action dynamically
+              import('../utils/copyPasteActions').then(({ updatePastePreview }) => {
+                updatePastePreview(dispatch, hex);
+              });
+            }
           }
         } else {
           // Clear hover state if mouse is outside grid
@@ -787,6 +846,10 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
           // Clear brush preview when outside grid
           if (brushMode && brushPreviewHexes.length > 0) {
             dispatch(uiActions.clearBrushPreview());
+          }
+          // Clear paste preview when outside grid
+          if (pastePreviewHexes.length > 0) {
+            dispatch(uiActions.clearPastePreview());
           }
         }
       }
@@ -806,6 +869,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
       brushSize,
       brushShape,
       brushPreviewHexes.length,
+      selectionMode,
+      selectionStart,
     ]
   );
 
@@ -826,11 +891,16 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     if (floodFillMode && floodFillPreviewHexes.length > 0) {
       dispatch(uiActions.clearFloodFillPreview());
     }
+    // Clear paste preview when leaving the canvas
+    if (pastePreviewHexes.length > 0) {
+      dispatch(uiActions.clearPastePreview());
+    }
   }, [
     brushMode,
     brushPreviewHexes.length,
     floodFillMode,
     floodFillPreviewHexes.length,
+    pastePreviewHexes.length,
     dispatch,
   ]);
 
@@ -846,44 +916,354 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     [zoom, dispatch]
   );
 
-  // Touch event handlers for mobile support
+  // Enhanced touch event handlers with gesture support
+  const [touchStartTime, setTouchStartTime] = useState<number>(0);
+  const [touchStartPoint, setTouchStartPoint] = useState<PixelCoordinate | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [pinchStartDistance, setPinchStartDistance] = useState<number | null>(null);
+  const [pinchStartZoom, setPinchStartZoom] = useState<number>(1);
+
+  const clearLongPressTimer = useCallback(() => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  }, [longPressTimer]);
+
+  const getTouchCenter = useCallback((touches: TouchList): PixelCoordinate => {
+    if (touches.length === 1) {
+      return { x: touches[0].clientX, y: touches[0].clientY };
+    }
+    
+    let x = 0, y = 0;
+    for (let i = 0; i < touches.length; i++) {
+      x += touches[i].clientX;
+      y += touches[i].clientY;
+    }
+    return { x: x / touches.length, y: y / touches.length };
+  }, []);
+
+  const getTouchDistance = useCallback((touches: TouchList): number => {
+    if (touches.length < 2) return 0;
+    
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }, []);
+
+  const getHexFromTouch = useCallback(
+    (touch: Touch): HexCoordinate | null => {
+      if (!canvasRef.current) return null;
+
+      const rect = canvasRef.current.getBoundingClientRect();
+      const screenCoord = {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
+      };
+
+      const worldCoord = screenToWorld(screenCoord);
+      const offsetCoord = {
+        x: worldCoord.x - canvasSize.width / 2,
+        y: worldCoord.y - canvasSize.height / 2,
+      };
+
+      return pixelToHex(offsetCoord, appearance.hexSize);
+    },
+    [screenToWorld, canvasSize, appearance.hexSize]
+  );
+
+  const triggerHapticFeedback = useCallback((type: 'light' | 'medium' | 'heavy' = 'light') => {
+    if ('vibrate' in navigator) {
+      const patterns = {
+        light: [10],
+        medium: [20],
+        heavy: [30]
+      };
+      navigator.vibrate(patterns[type]);
+    }
+  }, []);
+
   const handleTouchStart = useCallback(
     (event: React.TouchEvent<HTMLCanvasElement>) => {
-      if (event.touches.length === 1) {
-        const touch = event.touches[0];
-        setIsPanning(true);
-        setLastPanPoint({ x: touch.clientX, y: touch.clientY });
+      const touches = event.touches;
+      const currentTime = Date.now();
+      
+      if (touches.length === 1) {
+        // Single touch - potential tap, long press, or pan
+        const touch = touches[0];
+        const touchPoint = { x: touch.clientX, y: touch.clientY };
+        
+        setTouchStartTime(currentTime);
+        setTouchStartPoint(touchPoint);
+        setIsPanning(false);
+        setLastPanPoint(touchPoint);
+
+        // Set up long press detection
+        const timer = setTimeout(() => {
+          const hex = getHexFromTouch(touch);
+          if (hex && isHexInBounds(hex)) {
+            triggerHapticFeedback('heavy');
+            
+            if (isGMMode) {
+              // Long press in GM mode - open property dialog or context menu
+              const hexKey = `${hex.q},${hex.r}`;
+              const hexCell = mapCells.get(hexKey);
+              
+              if (hexCell && (hexCell.terrain || hexCell.landmark)) {
+                dispatch(uiActions.openPropertyDialog(hex));
+              } else {
+                // Could show context menu for empty hex
+                dispatch(uiActions.selectHex(hex));
+              }
+            } else {
+              // Long press in player mode - show hex info if explored
+              const visibility = selectHexVisibility(hex)(store.getState());
+              if (visibility.shouldShow) {
+                dispatch(uiActions.selectHex(hex));
+              }
+            }
+          }
+          clearLongPressTimer();
+        }, 500); // 500ms for long press
+        
+        setLongPressTimer(timer);
+        
+      } else if (touches.length === 2) {
+        // Two touches - pinch to zoom
+        clearLongPressTimer();
+        setIsPanning(false);
+        
+        const distance = getTouchDistance(touches);
+        const center = getTouchCenter(touches);
+        
+        setPinchStartDistance(distance);
+        setPinchStartZoom(zoom);
+        setLastPanPoint(center);
       }
+
       event.preventDefault();
     },
-    []
+    [
+      getHexFromTouch, 
+      isHexInBounds, 
+      triggerHapticFeedback, 
+      isGMMode, 
+      mapCells, 
+      dispatch, 
+      clearLongPressTimer,
+      getTouchDistance,
+      getTouchCenter,
+      zoom
+    ]
   );
 
   const handleTouchMove = useCallback(
     (event: React.TouchEvent<HTMLCanvasElement>) => {
-      if (isPanning && lastPanPoint && event.touches.length === 1) {
-        const touch = event.touches[0];
-        const deltaX = touch.clientX - lastPanPoint.x;
-        const deltaY = touch.clientY - lastPanPoint.y;
+      const touches = event.touches;
+      
+      if (touches.length === 1 && lastPanPoint) {
+        // Single touch movement - panning
+        const touch = touches[0];
+        const currentPoint = { x: touch.clientX, y: touch.clientY };
+        
+        // Check if we've moved enough to start panning
+        if (touchStartPoint) {
+          const dx = currentPoint.x - touchStartPoint.x;
+          const dy = currentPoint.y - touchStartPoint.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance > 10) { // 10px threshold to start panning
+            clearLongPressTimer();
+            
+            if (!isPanning) {
+              setIsPanning(true);
+              triggerHapticFeedback('light');
+            }
+          }
+        }
+        
+        if (isPanning) {
+          const deltaX = currentPoint.x - lastPanPoint.x;
+          const deltaY = currentPoint.y - lastPanPoint.y;
 
-        dispatch(
-          uiActions.setPanOffset({
-            x: panOffset.x + deltaX,
-            y: panOffset.y + deltaY,
-          })
-        );
-
-        setLastPanPoint({ x: touch.clientX, y: touch.clientY });
+          dispatch(
+            uiActions.setPanOffset({
+              x: panOffset.x + deltaX,
+              y: panOffset.y + deltaY,
+            })
+          );
+        }
+        
+        setLastPanPoint(currentPoint);
+        
+      } else if (touches.length === 2 && pinchStartDistance && lastPanPoint) {
+        // Two touch movement - pinch zoom and pan
+        const currentDistance = getTouchDistance(touches);
+        const currentCenter = getTouchCenter(touches);
+        
+        // Handle zoom
+        const scale = currentDistance / pinchStartDistance;
+        const newZoom = Math.max(0.1, Math.min(3.0, pinchStartZoom * scale));
+        
+        if (Math.abs(newZoom - zoom) > 0.01) {
+          dispatch(uiActions.setZoom(newZoom));
+        }
+        
+        // Handle pan (two-finger pan)
+        const deltaX = currentCenter.x - lastPanPoint.x;
+        const deltaY = currentCenter.y - lastPanPoint.y;
+        
+        if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+          dispatch(
+            uiActions.setPanOffset({
+              x: panOffset.x + deltaX,
+              y: panOffset.y + deltaY,
+            })
+          );
+        }
+        
+        setLastPanPoint(currentCenter);
       }
+
       event.preventDefault();
     },
-    [isPanning, lastPanPoint, panOffset, dispatch]
+    [
+      lastPanPoint,
+      touchStartPoint,
+      clearLongPressTimer,
+      isPanning,
+      triggerHapticFeedback,
+      dispatch,
+      panOffset,
+      pinchStartDistance,
+      pinchStartZoom,
+      getTouchDistance,
+      getTouchCenter,
+      zoom
+    ]
   );
 
-  const handleTouchEnd = useCallback(() => {
-    setIsPanning(false);
-    setLastPanPoint(null);
-  }, []);
+  const handleTouchEnd = useCallback(
+    (event: React.TouchEvent<HTMLCanvasElement>) => {
+      const touches = event.touches;
+      const changedTouches = event.changedTouches;
+      const endTime = Date.now();
+      
+      clearLongPressTimer();
+      
+      // If this was a quick tap (not a pan or long press)
+      if (
+        touches.length === 0 && 
+        changedTouches.length === 1 && 
+        !isPanning && 
+        touchStartTime &&
+        touchStartPoint &&
+        endTime - touchStartTime < 300
+      ) {
+        const touch = changedTouches[0];
+        const endPoint = { x: touch.clientX, y: touch.clientY };
+        const dx = endPoint.x - touchStartPoint.x;
+        const dy = endPoint.y - touchStartPoint.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // If movement was minimal, treat as tap
+        if (distance < 10) {
+          triggerHapticFeedback('light');
+          
+          const hex = getHexFromTouch(touch);
+          if (hex && isHexInBounds(hex)) {
+            if (isPlayerMode) {
+              // Player mode tap - move player
+              const existingPlayerIndex = playerPositions.findIndex((pos) =>
+                hexEquals(pos, hex)
+              );
+
+              if (existingPlayerIndex >= 0) {
+                dispatch(mapActions.removePlayerPosition(existingPlayerIndex));
+                const remainingPositions = playerPositions.filter(
+                  (_, i) => i !== existingPlayerIndex
+                );
+                updatePlayerVisibility(remainingPositions, sightDistance);
+              } else {
+                if (playerPositions.length === 0) {
+                  dispatch(mapActions.addPlayerPosition(hex));
+                  updatePlayerVisibility([hex], sightDistance);
+                } else {
+                  const newPositions = [hex, ...playerPositions.slice(1)];
+                  dispatch(mapActions.updatePlayerPositions(newPositions));
+                  updatePlayerVisibility(newPositions, sightDistance);
+                }
+              }
+            } else {
+              // GM mode tap - handle terrain placement or selection
+              if (quickTerrainMode && selectedQuickTerrain) {
+                if (brushMode) {
+                  const brushHexes = getBrushHexes(hex, brushSize, brushShape);
+                  const validBrushHexes = brushHexes.filter(isHexInBounds);
+                  
+                  validBrushHexes.forEach((brushHex) => {
+                    dispatch(
+                      mapActions.placeIcon({
+                        coordinate: brushHex,
+                        terrain: selectedQuickTerrain,
+                      })
+                    );
+                  });
+                } else {
+                  dispatch(
+                    mapActions.placeIcon({
+                      coordinate: hex,
+                      terrain: selectedQuickTerrain,
+                    })
+                  );
+                }
+              }
+              
+              dispatch(uiActions.selectHex(hex));
+            }
+          }
+        }
+      }
+      
+      // Reset touch state
+      if (touches.length === 0) {
+        setIsPanning(false);
+        setLastPanPoint(null);
+        setTouchStartTime(0);
+        setTouchStartPoint(null);
+        setPinchStartDistance(null);
+        setPinchStartZoom(1);
+      } else if (touches.length === 1) {
+        // One finger remaining - reset to single touch state
+        const touch = touches[0];
+        setLastPanPoint({ x: touch.clientX, y: touch.clientY });
+        setPinchStartDistance(null);
+        setPinchStartZoom(1);
+      }
+
+      event.preventDefault();
+    },
+    [
+      clearLongPressTimer,
+      isPanning,
+      touchStartTime,
+      touchStartPoint,
+      triggerHapticFeedback,
+      getHexFromTouch,
+      isHexInBounds,
+      isPlayerMode,
+      playerPositions,
+      dispatch,
+      updatePlayerVisibility,
+      sightDistance,
+      quickTerrainMode,
+      selectedQuickTerrain,
+      brushMode,
+      brushSize,
+      brushShape,
+      getBrushHexes
+    ]
+  );
 
   // Drag and drop event handlers
   const handleDragOver = useCallback(

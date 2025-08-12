@@ -11,6 +11,7 @@ import { mapSlice } from './slices/mapSlice';
 import { uiSlice } from './slices/uiSlice';
 import { explorationSlice } from './slices/explorationSlice';
 import { historySlice } from './slices/historySlice';
+import { templateSlice } from './slices/templateSlice';
 import { localStorageMiddleware } from './middleware/localStorage';
 
 export const store = configureStore({
@@ -19,6 +20,7 @@ export const store = configureStore({
     ui: uiSlice.reducer,
     exploration: explorationSlice.reducer,
     history: historySlice.reducer,
+    template: templateSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -48,6 +50,7 @@ export { mapActions } from './slices/mapSlice';
 export { uiActions } from './slices/uiSlice';
 export { explorationActions } from './slices/explorationSlice';
 export { historyActions } from './slices/historySlice';
+export { templateActions } from './slices/templateSlice';
 
 // Export selectors
 export * from './selectors';

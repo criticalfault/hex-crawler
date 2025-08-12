@@ -48,6 +48,7 @@ export function initializeStore() {
         borderColor: '#333333',
         backgroundColor: '#f0f0f0',
         unexploredColor: '#cccccc',
+        sightColor: '#e6e6fa',
         textSize: 12,
         terrainColors: {
           mountains: '#8B4513',

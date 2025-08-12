@@ -139,7 +139,7 @@ export const useKeyboardShortcuts = () => {
           dispatch(uiActions.closeSettingsPanel());
           dispatch(uiActions.closeMapManager());
           dispatch(uiActions.setShowShortcutsOverlay(false));
-          dispatch(uiActions.clearSelection());
+          dispatch(uiActions.clearHexSelection());
           if (brushMode) {
             dispatch(uiActions.setBrushMode(false));
           }
@@ -192,13 +192,7 @@ export const useKeyboardShortcuts = () => {
           }
           break;
 
-        case 'c':
-          // Toggle coordinates display (GM mode only)
-          if (isGMMode && !event.ctrlKey && !event.metaKey) {
-            preventDefault();
-            dispatch(uiActions.toggleCoordinates());
-          }
-          break;
+
 
         case 'm':
           // Toggle GM/Player mode (alternative to spacebar)
@@ -278,6 +272,41 @@ export const useKeyboardShortcuts = () => {
           }
           break;
 
+        case 'c':
+          // Copy (Ctrl+C) or toggle coordinates (C alone)
+          if (event.ctrlKey || event.metaKey) {
+            if (isGMMode) {
+              preventDefault();
+              // Import copy/paste actions dynamically
+              import('../utils/copyPasteActions').then(({ handleCopy }) => {
+                handleCopy(dispatch);
+              });
+            }
+          } else if (isGMMode) {
+            preventDefault();
+            dispatch(uiActions.toggleCoordinates());
+          }
+          break;
+
+        case 'v':
+          // Paste (Ctrl+V)
+          if ((event.ctrlKey || event.metaKey) && isGMMode) {
+            preventDefault();
+            // Import copy/paste actions dynamically
+            import('../utils/copyPasteActions').then(({ handlePaste }) => {
+              handlePaste(dispatch);
+            });
+          }
+          break;
+
+        case 'r':
+          // Toggle selection mode (GM mode only)
+          if (isGMMode && !event.ctrlKey && !event.metaKey) {
+            preventDefault();
+            dispatch(uiActions.toggleSelectionMode());
+          }
+          break;
+
         default:
           // No action for other keys
           break;
@@ -327,6 +356,11 @@ export const KEYBOARD_SHORTCUTS = {
   'B': 'Toggle Brush Mode (GM Mode)',
   'F': 'Toggle Flood Fill Mode (GM Mode)',
   'Shift+1-4': 'Brush Size Selection (1×1, 3×3, 5×5, 7×7)',
+  
+  // Copy/paste controls
+  'Ctrl+C': 'Copy Selected Region (GM Mode)',
+  'Ctrl+V': 'Paste Pattern (GM Mode)',
+  'R': 'Toggle Selection Mode (GM Mode)',
   
   // GM Mode specific
   'S': 'Settings Panel (GM Mode)',

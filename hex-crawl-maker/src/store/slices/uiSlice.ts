@@ -44,6 +44,17 @@ interface UIState {
   floodFillPreviewHexes: HexCoordinate[];
   floodFillTargetTerrain?: string;
   floodFillTargetLandmark?: string;
+  // Copy/paste system
+  selectionMode: boolean;
+  selectionStart: HexCoordinate | null;
+  selectionEnd: HexCoordinate | null;
+  selectedRegion: HexCoordinate[];
+  clipboard: {
+    pattern: Map<string, { terrain?: string; landmark?: string; name?: string; description?: string; gmNotes?: string }>;
+    dimensions: { width: number; height: number };
+  } | null;
+  pastePreviewHexes: HexCoordinate[];
+  pastePreviewPosition: HexCoordinate | null;
 }
 
 const initialState: UIState = {
@@ -76,6 +87,14 @@ const initialState: UIState = {
   floodFillPreviewHexes: [],
   floodFillTargetTerrain: undefined,
   floodFillTargetLandmark: undefined,
+  // Copy/paste system
+  selectionMode: false,
+  selectionStart: null,
+  selectionEnd: null,
+  selectedRegion: [],
+  clipboard: null,
+  pastePreviewHexes: [],
+  pastePreviewPosition: null,
 };
 
 export const uiSlice = createSlice({
@@ -101,7 +120,7 @@ export const uiSlice = createSlice({
       state.selectedHex = action.payload;
     },
 
-    clearSelection: (state) => {
+    clearHexSelection: (state) => {
       state.selectedHex = null;
       state.isPropertyDialogOpen = false;
     },
@@ -350,6 +369,88 @@ export const uiSlice = createSlice({
       state.floodFillPreviewHexes = [];
       state.floodFillTargetTerrain = undefined;
       state.floodFillTargetLandmark = undefined;
+    },
+
+    // Copy/paste system
+    toggleSelectionMode: (state) => {
+      state.selectionMode = !state.selectionMode;
+      if (state.selectionMode) {
+        // Clear other modes when entering selection mode
+        state.brushMode = false;
+        state.floodFillMode = false;
+        state.quickTerrainMode = false;
+        state.brushPreviewHexes = [];
+        state.floodFillPreviewHexes = [];
+        state.selectedHex = null;
+        state.isPropertyDialogOpen = false;
+      } else {
+        // Clear selection when exiting selection mode
+        state.selectionStart = null;
+        state.selectionEnd = null;
+        state.selectedRegion = [];
+        state.pastePreviewHexes = [];
+        state.pastePreviewPosition = null;
+      }
+    },
+
+    setSelectionMode: (state, action: PayloadAction<boolean>) => {
+      state.selectionMode = action.payload;
+      if (action.payload) {
+        state.brushMode = false;
+        state.floodFillMode = false;
+        state.quickTerrainMode = false;
+        state.brushPreviewHexes = [];
+        state.floodFillPreviewHexes = [];
+        state.selectedHex = null;
+        state.isPropertyDialogOpen = false;
+      } else {
+        state.selectionStart = null;
+        state.selectionEnd = null;
+        state.selectedRegion = [];
+        state.pastePreviewHexes = [];
+        state.pastePreviewPosition = null;
+      }
+    },
+
+    startSelection: (state, action: PayloadAction<HexCoordinate>) => {
+      state.selectionStart = action.payload;
+      state.selectionEnd = null;
+      state.selectedRegion = [];
+    },
+
+    updateSelection: (state, action: PayloadAction<HexCoordinate>) => {
+      state.selectionEnd = action.payload;
+    },
+
+    setSelectedRegion: (state, action: PayloadAction<HexCoordinate[]>) => {
+      state.selectedRegion = action.payload;
+    },
+
+    clearSelection: (state) => {
+      state.selectionStart = null;
+      state.selectionEnd = null;
+      state.selectedRegion = [];
+    },
+
+    setClipboard: (state, action: PayloadAction<{
+      pattern: Map<string, { terrain?: string; landmark?: string; name?: string; description?: string; gmNotes?: string }>;
+      dimensions: { width: number; height: number };
+    }>) => {
+      state.clipboard = action.payload;
+    },
+
+    clearClipboard: (state) => {
+      state.clipboard = null;
+    },
+
+    setPastePreview: (state, action: PayloadAction<{ hexes: HexCoordinate[]; position: HexCoordinate }>) => {
+      state.pastePreviewHexes = action.payload.hexes;
+      state.pastePreviewPosition = action.payload.position;
+    },
+
+    clearPastePreview: (state) => {
+      state.pastePreviewHexes = [];
+      state.pastePreviewPosition = null;
     },
   },
 });

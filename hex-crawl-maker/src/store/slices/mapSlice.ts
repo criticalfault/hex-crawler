@@ -4,7 +4,7 @@
 
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { MapData, HexCell, HexCoordinate, GridAppearance, RevealMode, TerrainType, LandmarkType } from '../../types';
+import type { MapData, HexCell, HexCoordinate, GridAppearance, RevealMode, TerrainType, LandmarkType, RoadType } from '../../types';
 
 interface MapState {
   currentMap: MapData | null;
@@ -33,6 +33,7 @@ const createDefaultMap = (name: string, dimensions: { width: number; height: num
     borderColor: '#333333',
     backgroundColor: '#f0f0f0',
     unexploredColor: '#cccccc',
+    sightColor: '#e6e6fa',
     textSize: 12,
     terrainColors: {
       mountains: '#8B4513',
@@ -40,6 +41,15 @@ const createDefaultMap = (name: string, dimensions: { width: number; height: num
       swamps: '#556B2F',
       water: '#4169E1',
       desert: '#F4A460',
+      hills: '#65A330',
+      shallowWater: '#87CEEB',
+      deepWater: '#2563EB',
+      oceanWater: '#1E3A8A',
+    },
+    roadColors: {
+      path: '#8B4513',
+      road: '#696969',
+      highway: '#333333',
     },
     borderWidth: 1,
   },
@@ -110,22 +120,26 @@ export const mapSlice = createSlice({
       coordinate: HexCoordinate;
       terrain?: string;
       landmark?: string;
+      road?: string;
+      roadConnections?: ('north' | 'northeast' | 'southeast' | 'south' | 'southwest' | 'northwest')[];
       name?: string;
       description?: string;
       gmNotes?: string;
     }>) => {
       if (state.currentMap) {
-        const { coordinate, terrain, landmark, name, description, gmNotes } = action.payload;
+        const { coordinate, terrain, landmark, road, roadConnections, name, description, gmNotes } = action.payload;
         const key = coordToKey(coordinate);
         
         const existingCell = state.currentMap.cells.get(key);
         const updatedCell: HexCell = {
           coordinate,
-          terrain: terrain as TerrainType,
-          landmark: landmark as LandmarkType,
-          name,
-          description,
-          gmNotes,
+          terrain: terrain as TerrainType ?? existingCell?.terrain,
+          landmark: landmark as LandmarkType ?? existingCell?.landmark,
+          road: road as RoadType ?? existingCell?.road,
+          roadConnections: roadConnections ?? existingCell?.roadConnections,
+          name: name ?? existingCell?.name,
+          description: description ?? existingCell?.description,
+          gmNotes: gmNotes ?? existingCell?.gmNotes,
           isExplored: existingCell?.isExplored || false,
           isVisible: existingCell?.isVisible || false,
         };
@@ -148,6 +162,74 @@ export const mapSlice = createSlice({
             name: undefined,
             description: undefined,
             gmNotes: undefined,
+          };
+          
+          state.currentMap.cells.set(key, updatedCell);
+          state.savedMaps[state.currentMap.id].cells.set(key, updatedCell);
+        }
+      }
+    },
+
+    // Road-specific actions
+    placeRoad: (state, action: PayloadAction<{
+      coordinate: HexCoordinate;
+      roadType: RoadType;
+      connections?: ('north' | 'northeast' | 'southeast' | 'south' | 'southwest' | 'northwest')[];
+    }>) => {
+      if (state.currentMap) {
+        const { coordinate, roadType, connections = [] } = action.payload;
+        const key = coordToKey(coordinate);
+        
+        const existingCell = state.currentMap.cells.get(key);
+        const updatedCell: HexCell = {
+          coordinate,
+          terrain: existingCell?.terrain,
+          landmark: existingCell?.landmark,
+          road: roadType,
+          roadConnections: connections,
+          name: existingCell?.name,
+          description: existingCell?.description,
+          gmNotes: existingCell?.gmNotes,
+          isExplored: existingCell?.isExplored || false,
+          isVisible: existingCell?.isVisible || false,
+        };
+
+        state.currentMap.cells.set(key, updatedCell);
+        state.savedMaps[state.currentMap.id].cells.set(key, updatedCell);
+      }
+    },
+
+    removeRoad: (state, action: PayloadAction<HexCoordinate>) => {
+      if (state.currentMap) {
+        const key = coordToKey(action.payload);
+        const existingCell = state.currentMap.cells.get(key);
+        
+        if (existingCell) {
+          const updatedCell: HexCell = {
+            ...existingCell,
+            road: undefined,
+            roadConnections: undefined,
+          };
+          
+          state.currentMap.cells.set(key, updatedCell);
+          state.savedMaps[state.currentMap.id].cells.set(key, updatedCell);
+        }
+      }
+    },
+
+    updateRoadConnections: (state, action: PayloadAction<{
+      coordinate: HexCoordinate;
+      connections: ('north' | 'northeast' | 'southeast' | 'south' | 'southwest' | 'northwest')[];
+    }>) => {
+      if (state.currentMap) {
+        const { coordinate, connections } = action.payload;
+        const key = coordToKey(coordinate);
+        const existingCell = state.currentMap.cells.get(key);
+        
+        if (existingCell && existingCell.road) {
+          const updatedCell: HexCell = {
+            ...existingCell,
+            roadConnections: connections,
           };
           
           state.currentMap.cells.set(key, updatedCell);
@@ -206,10 +288,11 @@ export const mapSlice = createSlice({
       hexes: HexCoordinate[];
       terrain?: string;
       landmark?: string;
+      road?: string;
       clearExisting?: boolean;
     }>) => {
       if (state.currentMap) {
-        const { hexes, terrain, landmark, clearExisting = false } = action.payload;
+        const { hexes, terrain, landmark, road, clearExisting = false } = action.payload;
         
         for (const hex of hexes) {
           const key = coordToKey(hex);
@@ -219,6 +302,8 @@ export const mapSlice = createSlice({
             coordinate: hex,
             terrain: clearExisting ? undefined : (terrain as TerrainType ?? existingCell?.terrain),
             landmark: clearExisting ? undefined : (landmark as LandmarkType ?? existingCell?.landmark),
+            road: clearExisting ? undefined : (road as RoadType ?? existingCell?.road),
+            roadConnections: clearExisting ? undefined : existingCell?.roadConnections,
             name: clearExisting ? undefined : existingCell?.name,
             description: clearExisting ? undefined : existingCell?.description,
             gmNotes: clearExisting ? undefined : existingCell?.gmNotes,
@@ -228,6 +313,71 @@ export const mapSlice = createSlice({
           
           state.currentMap.cells.set(key, updatedCell);
           state.savedMaps[state.currentMap.id].cells.set(key, updatedCell);
+        }
+      }
+    },
+
+    // Copy/paste operations
+    pastePattern: (state, action: PayloadAction<{
+      targetPosition: HexCoordinate;
+      pattern: Map<string, { terrain?: string; landmark?: string; road?: string; roadConnections?: ('north' | 'northeast' | 'southeast' | 'south' | 'southwest' | 'northwest')[]; name?: string; description?: string; gmNotes?: string }>;
+      patternDimensions: { width: number; height: number };
+      rotation?: number;
+      mirror?: 'horizontal' | 'vertical' | 'both';
+    }>) => {
+      if (state.currentMap) {
+        const { targetPosition, pattern, rotation = 0, mirror } = action.payload;
+        
+        for (const [relativeKey, cellData] of pattern.entries()) {
+          const [relQ, relR] = relativeKey.split(',').map(Number);
+          let finalQ = relQ;
+          let finalR = relR;
+          
+          // Apply mirroring
+          if (mirror === 'horizontal' || mirror === 'both') {
+            finalQ = -finalQ;
+          }
+          if (mirror === 'vertical' || mirror === 'both') {
+            finalR = -finalR;
+          }
+          
+          // Apply rotation (60-degree increments for hex grid)
+          const rotations = Math.floor(rotation / 60) % 6;
+          for (let i = 0; i < rotations; i++) {
+            const newQ = -finalR;
+            const newR = finalQ + finalR;
+            finalQ = newQ;
+            finalR = newR;
+          }
+          
+          const absoluteCoord: HexCoordinate = {
+            q: targetPosition.q + finalQ,
+            r: targetPosition.r + finalR,
+          };
+          
+          // Check if the coordinate is within map bounds
+          if (absoluteCoord.q >= 0 && absoluteCoord.q < state.currentMap.dimensions.width &&
+              absoluteCoord.r >= 0 && absoluteCoord.r < state.currentMap.dimensions.height) {
+            
+            const key = coordToKey(absoluteCoord);
+            const existingCell = state.currentMap.cells.get(key);
+            
+            const updatedCell: HexCell = {
+              coordinate: absoluteCoord,
+              terrain: cellData.terrain as TerrainType ?? existingCell?.terrain,
+              landmark: cellData.landmark as LandmarkType ?? existingCell?.landmark,
+              road: cellData.road as RoadType ?? existingCell?.road,
+              roadConnections: cellData.roadConnections ?? existingCell?.roadConnections,
+              name: cellData.name ?? existingCell?.name,
+              description: cellData.description ?? existingCell?.description,
+              gmNotes: cellData.gmNotes ?? existingCell?.gmNotes,
+              isExplored: existingCell?.isExplored || false,
+              isVisible: existingCell?.isVisible || false,
+            };
+            
+            state.currentMap.cells.set(key, updatedCell);
+            state.savedMaps[state.currentMap.id].cells.set(key, updatedCell);
+          }
         }
       }
     },

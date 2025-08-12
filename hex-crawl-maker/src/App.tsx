@@ -17,6 +17,8 @@ import {
 import { uiActions } from './store';
 import { HexGrid } from './components/HexGrid';
 import { IconPalette } from './components/IconPalette';
+import { MobileIconPalette } from './components/MobileIconPalette';
+import { MobileLayout } from './components/MobileLayout';
 import { PropertyDialog } from './components/PropertyDialog';
 import { ModeToggle } from './components/ModeToggle';
 import { PlayerControls } from './components/PlayerControls';
@@ -29,9 +31,13 @@ import { UndoRedoControls } from './components/UndoRedoControls';
 import { AnimatedTransition } from './components/AnimatedTransition';
 import { GMControls } from './components/GMControls';
 import { KeyboardShortcutsOverlay } from './components/KeyboardShortcutsOverlay';
+import { TemplateDialog } from './components/TemplateDialog';
+import { BiomeGenerator } from './components/BiomeGenerator';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { isTouchDevice } from './utils/touchUtils';
 import './App.css';
 import './styles/projection.css';
+import './styles/mobile.css';
 
 function AppContent() {
   const dispatch = useAppDispatch();
@@ -50,7 +56,10 @@ function AppContent() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const previousMode = useRef(currentMode);
 
-  // Enable keyboard shortcuts
+  // Detect if this is a touch device
+  const isMobile = isTouchDevice();
+
+  // Enable keyboard shortcuts (disabled on mobile to prevent conflicts)
   useKeyboardShortcuts();
 
   useEffect(() => {
@@ -99,68 +108,101 @@ function AppContent() {
     quickTerrainMode && 'app--quick-terrain-mode',
   ].filter(Boolean).join(' ');
 
+  // Header content for mobile layout
+  const headerContent = (
+    <>
+      <h1>Hex Crawl Maker</h1>
+      <div className="app-header__controls">
+        <div className="app-header__mode-indicator">
+          <span className={`mode-indicator mode-indicator--${currentMode}`}>
+            {isGMMode ? '🎲 GM Mode' : '🗺️ Player Mode'}
+          </span>
+        </div>
+        {isGMMode && (
+          <>
+            <MapManagerButton onClick={handleOpenMapManager} />
+            <SettingsButton />
+          </>
+        )}
+      </div>
+    </>
+  );
+
+  // Sidebar content for mobile layout
+  const sidebarContent = (
+    <>
+      <ModeToggle />
+      {isGMMode && (
+        <AnimatedTransition
+          isVisible={isGMMode}
+          type="slide"
+          direction="down"
+          duration={300}
+        >
+          <UndoRedoControls className="sidebar-undo-redo" />
+          <GMControls />
+          {isMobile ? <MobileIconPalette /> : <IconPalette />}
+        </AnimatedTransition>
+      )}
+      {isPlayerMode && (
+        <AnimatedTransition
+          isVisible={isPlayerMode}
+          type="slide"
+          direction="down"
+          duration={300}
+        >
+          <div className="player-mode-info">
+            <h3>Player View</h3>
+            <p>Only explored areas are visible. Move players to reveal new hexes.</p>
+          </div>
+          <PlayerControls />
+        </AnimatedTransition>
+      )}
+    </>
+  );
+
+  // Main content
+  const mainContent = <HexGrid className="touch-gesture-area pinch-zoom-enabled" />;
+
   return (
     <div className={appClasses}>
-      <header className="app-header">
-        <div className="app-header__content">
-          <h1>Hex Crawl Maker</h1>
-          <div className="app-header__controls">
-            <div className="app-header__mode-indicator">
-              <span className={`mode-indicator mode-indicator--${currentMode}`}>
-                {isGMMode ? '🎲 GM Mode' : '🗺️ Player Mode'}
-              </span>
+      {isMobile ? (
+        <MobileLayout
+          header={headerContent}
+          sidebar={sidebarContent}
+        >
+          {mainContent}
+        </MobileLayout>
+      ) : (
+        <>
+          <header className="app-header">
+            <div className="app-header__content">
+              {headerContent}
             </div>
-            {isGMMode && (
-              <>
-                <MapManagerButton onClick={handleOpenMapManager} />
-                <SettingsButton />
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-      <main className="app-main">
-        <div className={`app-sidebar ${isPlayerMode ? 'app-sidebar--player-mode' : ''}`}>
-          <ModeToggle />
-          {isGMMode && (
-            <AnimatedTransition
-              isVisible={isGMMode}
-              type="slide"
-              direction="down"
-              duration={300}
-            >
-              <UndoRedoControls className="sidebar-undo-redo" />
-              <GMControls />
-              <IconPalette />
-            </AnimatedTransition>
-          )}
-          {isPlayerMode && (
-            <AnimatedTransition
-              isVisible={isPlayerMode}
-              type="slide"
-              direction="down"
-              duration={300}
-            >
-              <div className="player-mode-info">
-                <h3>Player View</h3>
-                <p>Only explored areas are visible. Move players to reveal new hexes.</p>
-              </div>
-              <PlayerControls />
-            </AnimatedTransition>
-          )}
-        </div>
-        <div className="app-content">
-          <HexGrid />
-        </div>
-      </main>
+          </header>
+          <main className="app-main">
+            <div className={`app-sidebar ${isPlayerMode ? 'app-sidebar--player-mode' : ''}`}>
+              {sidebarContent}
+            </div>
+            <div className="app-content">
+              {mainContent}
+            </div>
+          </main>
+        </>
+      )}
+      
       {isGMMode && <PropertyDialog />}
+      <TemplateDialog />
+      <BiomeGenerator />
       <SettingsPanel isOpen={isSettingsPanelOpen} onClose={handleCloseSettings} />
       <MapManager isOpen={isMapManagerOpen} onClose={handleCloseMapManager} />
       <HelpSystem />
-      <KeyboardShortcutsOverlay 
-        isVisible={showShortcutsOverlay} 
-        onClose={handleCloseShortcutsOverlay} 
-      />
+      {!isMobile && (
+        <KeyboardShortcutsOverlay 
+          isVisible={showShortcutsOverlay} 
+          onClose={handleCloseShortcutsOverlay} 
+        />
+      )}
     </div>
   );
 }

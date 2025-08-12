@@ -1,0 +1,52 @@
+/**
+ * Styles for the ExportButton component
+ */
+
+.export-button-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  justify-content: center;
+}
+
+.export-button-trigger:hover {
+  background-color: #138496;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.export-button-trigger:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.export-button-trigger:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.3);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .export-button-trigger {
+    background-color: #20c997;
+  }
+  
+  .export-button-trigger:hover {
+    background-color: #1ba085;
+  }
+  
+  .export-button-trigger:focus {
+    box-shadow: 0 0 0 3px rgba(32, 201, 151, 0.3);
+  }
+}
