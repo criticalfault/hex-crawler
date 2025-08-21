@@ -683,8 +683,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
                   const preview = getFloodFillPreview(
                     hex,
                     mapCells,
-                    floodFillTargetTerrain,
-                    floodFillTargetLandmark
+                    floodFillTargetTerrain as any,
+                    floodFillTargetLandmark as any
                   );
                   const validFloodFillHexes =
                     preview.hexes.filter(isHexInBounds);
@@ -919,7 +919,7 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
   // Enhanced touch event handlers with gesture support
   const [touchStartTime, setTouchStartTime] = useState<number>(0);
   const [touchStartPoint, setTouchStartPoint] = useState<PixelCoordinate | null>(null);
-  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<number | null>(null);
   const [pinchStartDistance, setPinchStartDistance] = useState<number | null>(null);
   const [pinchStartZoom, setPinchStartZoom] = useState<number>(1);
 

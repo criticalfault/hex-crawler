@@ -54,6 +54,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
         swamps: '#556B2F',
         water: '#4169E1',
         desert: '#F4A460',
+        hills: '#CD853F',
+        shallowWater: '#87CEEB',
+        deepWater: '#4682B4',
+        oceanWater: '#191970',
+      },
+      roadColors: {
+        path: '#8B4513',
+        road: '#696969',
+        highway: '#2F4F4F',
       },
       borderWidth: 1,
     };

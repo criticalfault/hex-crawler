@@ -28,6 +28,7 @@ export type LandmarkType =
   | 'castle'
   | 'fortress'
   | 'watchtower'
+  | 'tower'
   | 'signalFire'
   | 'mineEntrance'
   | 'caveMouth'

@@ -371,7 +371,11 @@ export class TemplateService {
       plains: 0,
       swamps: 0,
       water: 0,
-      desert: 0
+      desert: 0,
+      hills: 0,
+      shallowWater: 0,
+      deepWater: 0,
+      oceanWater: 0
     };
 
     switch (biomeType) {
@@ -416,9 +420,31 @@ export class TemplateService {
 
   private static getBiomeLandmarkWeights(biomeType: BiomeGeneratorConfig['biomeType']): Record<LandmarkType, number> {
     const weights: Record<LandmarkType, number> = {
-      tower: 0.1,
+      village: 0.2,
+      hamlet: 0.3,
       town: 0.3,
       city: 0.1,
+      ruinsAncient: 0.1,
+      ruinsRecent: 0.1,
+      castle: 0.05,
+      fortress: 0.05,
+      watchtower: 0.1,
+      tower: 0.1,
+      signalFire: 0.1,
+      mineEntrance: 0.1,
+      caveMouth: 0.1,
+      standingStones: 0.1,
+      stoneCircle: 0.1,
+      temple: 0.1,
+      shrine: 0.1,
+      wizardTower: 0.05,
+      tradingPost: 0.1,
+      roadhouse: 0.1,
+      bridge: 0.1,
+      ford: 0.1,
+      ferryCrossing: 0.1,
+      campsite: 0.2,
+      huntersLodge: 0.1,
       marker: 0.5
     };
 

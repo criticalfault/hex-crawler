@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../store';
-import { uiActions, mapActions } from '../store';
+import { uiActions, mapActions, historyActions } from '../store';
 import { 
   selectFloodFillMode, 
   selectFloodFillPreviewHexes,
@@ -87,9 +87,7 @@ export const FloodFillControls: React.FC = () => {
       dispatch(uiActions.clearFloodFillPreview());
       
       // Add to undo history
-      import('../store').then(({ historyActions }) => {
-        dispatch(historyActions.saveState());
-      });
+      dispatch(historyActions.saveToHistory(mapCells));
     }
     setShowConfirmation(false);
     setPendingFillData(null);
@@ -114,9 +112,7 @@ export const FloodFillControls: React.FC = () => {
       dispatch(uiActions.clearFloodFillPreview());
       
       // Add to undo history
-      import('../store').then(({ historyActions }) => {
-        dispatch(historyActions.saveState());
-      });
+      dispatch(historyActions.saveToHistory(mapCells));
     }
   };
 

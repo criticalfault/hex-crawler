@@ -44,7 +44,7 @@ export interface BiomeGeneratorConfig {
 }
 
 export interface TemplateGenerationOptions {
-  dimensions: { width: number; height: number };
+  dimensions?: { width: number; height: number };
   centerPoint?: HexCoordinate;
   rotation?: number; // degrees
   mirror?: 'horizontal' | 'vertical' | 'both';

@@ -73,14 +73,14 @@ export function useTouchGestures(
 
   const touchStart = useRef<TouchPoint[]>([]);
   const lastTouchMove = useRef<TouchPoint[]>([]);
-  const longPressTimer = useRef<NodeJS.Timeout>();
+  const longPressTimer = useRef<number | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [isPinching, setIsPinching] = useState(false);
 
   const clearLongPressTimer = useCallback(() => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
-      longPressTimer.current = undefined;
+      longPressTimer.current = null;
     }
   }, []);
 

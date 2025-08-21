@@ -235,7 +235,7 @@ export const loadUIPreferences = () => {
 };
 
 // Auto-save functionality
-let autoSaveTimeout: NodeJS.Timeout | null = null;
+let autoSaveTimeout: number | null = null;
 
 const scheduleAutoSave = (state: any) => {
   // Clear existing timeout

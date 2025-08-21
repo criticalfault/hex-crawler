@@ -1,295 +1,287 @@
 /**
- * Export service for rendering and exporting hex maps
+ * Export service for generating various map export formats
  */
 
-import jsPDF from 'jspdf';
-import type { MapData, HexCoordinate, HexCell } from '../types';
-import { hexToPixel } from '../utils/hexCoordinates';
-import {
-  calculateExportDimensions,
-  createExportCanvas,
-  loadIconsForExport,
-  drawExportHexagon,
-  drawExportHexContent,
-  drawExportPlayerPositions,
-  drawExportCoordinates,
-  drawExportWatermark,
-  canvasToBlob,
-  downloadBlob,
-  generateExportFilename,
-} from '../utils/exportUtils';
-import type { ExportOptions, ExportDimensions } from '../utils/exportUtils';
+// import { jsPDF } from 'jspdf';
+import type { MapData, HexCoordinate, HexCell } from "../types";
+import { hexToPixel } from "../utils/hexCoordinates";
 
+export interface ExportOptions {
+  format: "png" | "jpg" | "svg" | "pdf";
+  quality?: number; // 0-1 for jpg
+  scale?: number; // Scale factor for raster formats
+  includeGrid?: boolean;
+  includeCoordinates?: boolean;
+  includeLabels?: boolean;
+  backgroundColor?: string;
+  selectedRegion?: {
+    topLeft: HexCoordinate;
+    bottomRight: HexCoordinate;
+  };
+}
+
+export interface BatchExportOptions {
+  formats: ExportOptions["format"][];
+  baseOptions: Omit<ExportOptions, "format">;
+  includePlayerVersion?: boolean; // Version without GM-only elements
+  includeHighRes?: boolean; // 2x scale version
+}
+
+/**
+ * Service for exporting maps in various formats
+ */
 export class ExportService {
-  private iconCache: Map<string, HTMLImageElement> | null = null;
+  private static instance: ExportService;
 
-  /**
-   * Initialize the export service by loading icons
-   */
-  async initialize(): Promise<void> {
-    if (!this.iconCache) {
-      this.iconCache = await loadIconsForExport();
+  static getInstance(): ExportService {
+    if (!ExportService.instance) {
+      ExportService.instance = new ExportService();
     }
+    return ExportService.instance;
   }
 
   /**
-   * Export map as PNG image
+   * Export map as PNG
    */
   async exportPNG(
-    mapData: MapData,
-    options: ExportOptions,
-    visibleHexes?: Set<string>
-  ): Promise<void> {
-    await this.initialize();
-    
-    const dimensions = calculateExportDimensions(mapData, options, visibleHexes);
-    const canvas = await this.renderMapToCanvas(mapData, options, dimensions, visibleHexes);
-    
-    const blob = await canvasToBlob(canvas, 'png');
-    const filename = generateExportFilename(mapData.name, 'png', options);
-    
-    downloadBlob(blob, filename);
+    canvas: HTMLCanvasElement,
+    mapName: string,
+    options: Partial<ExportOptions> = {}
+  ): Promise<Blob> {
+    const { quality = 1, scale = 1 } = options;
+
+    if (scale !== 1) {
+      // Create scaled canvas
+      const scaledCanvas = this.scaleCanvas(canvas, scale);
+      return this.canvasToBlob(scaledCanvas, "image/png");
+    }
+
+    return this.canvasToBlob(canvas, "image/png");
   }
 
   /**
-   * Export map as PDF (using canvas and jsPDF)
+   * Export map as JPG
+   */
+  async exportJPG(
+    canvas: HTMLCanvasElement,
+    mapName: string,
+    options: Partial<ExportOptions> = {}
+  ): Promise<Blob> {
+    const { quality = 0.9, scale = 1 } = options;
+
+    if (scale !== 1) {
+      // Create scaled canvas
+      const scaledCanvas = this.scaleCanvas(canvas, scale);
+      return this.canvasToBlob(scaledCanvas, "image/jpeg", quality);
+    }
+
+    return this.canvasToBlob(canvas, "image/jpeg", quality);
+  }
+
+  /**
+   * Export map as PDF (temporarily disabled)
    */
   async exportPDF(
+    canvas: HTMLCanvasElement,
+    mapName: string,
+    options: Partial<ExportOptions> = {}
+  ): Promise<Blob> {
+    throw new Error("PDF export temporarily disabled");
+  }
+
+  /**
+   * Export map as SVG
+   */
+  async exportSVG(
     mapData: MapData,
-    options: ExportOptions,
-    visibleHexes?: Set<string>
-  ): Promise<void> {
-    // For now, we'll implement PDF export as a high-resolution PNG embedded in PDF
-    // This can be enhanced later with proper PDF vector graphics
-    await this.initialize();
-    
-    const dimensions = calculateExportDimensions(mapData, options, visibleHexes);
-    const canvas = await this.renderMapToCanvas(mapData, options, dimensions, visibleHexes);
-    
-    // Convert to PDF using a simple approach
-    const blob = await this.canvasToPDF(canvas, mapData.name);
-    const filename = generateExportFilename(mapData.name, 'pdf', options);
-    
-    downloadBlob(blob, filename);
+    mapName: string,
+    options: Partial<ExportOptions> = {}
+  ): Promise<Blob> {
+    const svg = this.generateSVG(mapData, options);
+    return new Blob([svg], { type: "image/svg+xml" });
   }
 
   /**
-   * Render map to canvas
+   * Scale canvas by given factor
    */
-  private async renderMapToCanvas(
+  private scaleCanvas(
+    canvas: HTMLCanvasElement,
+    scale: number
+  ): HTMLCanvasElement {
+    const scaledCanvas = document.createElement("canvas");
+    const ctx = scaledCanvas.getContext("2d")!;
+
+    scaledCanvas.width = canvas.width * scale;
+    scaledCanvas.height = canvas.height * scale;
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.scale(scale, scale);
+    ctx.drawImage(canvas, 0, 0);
+
+    return scaledCanvas;
+  }
+
+  /**
+   * Convert canvas to blob
+   */
+  private canvasToBlob(
+    canvas: HTMLCanvasElement,
+    type: string,
+    quality?: number
+  ): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Failed to create blob from canvas"));
+          }
+        },
+        type,
+        quality
+      );
+    });
+  }
+
+  /**
+   * Generate SVG from map data
+   */
+  private generateSVG(
     mapData: MapData,
-    options: ExportOptions,
-    dimensions: ExportDimensions,
-    visibleHexes?: Set<string>
-  ): Promise<HTMLCanvasElement> {
-    const canvas = createExportCanvas(dimensions);
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx || !this.iconCache) {
-      throw new Error('Failed to get canvas context or icons not loaded');
-    }
+    options: Partial<ExportOptions> = {}
+  ): string {
+    const { includeGrid = true, includeCoordinates = false } = options;
+    const { cells, dimensions, appearance } = mapData;
 
-    // Determine which hexes to render
-    const hexesToRender = this.getHexesToRender(mapData, options, visibleHexes);
-    
-    // Render hexes
-    for (const hex of hexesToRender) {
-      const center = hexToPixel(hex, dimensions.hexSize);
-      const adjustedCenter = {
-        x: center.x + dimensions.offsetX,
-        y: center.y + dimensions.offsetY,
-      };
-      
-      const hexKey = `${hex.q},${hex.r}`;
-      const hexCell = mapData.cells.get(hexKey);
-      
-      // Determine hex appearance
-      const fillColor = this.getHexFillColor(hexCell, mapData.appearance);
-      const strokeColor = options.layers.grid ? mapData.appearance.borderColor : 'transparent';
-      const strokeWidth = options.layers.grid ? mapData.appearance.borderWidth : 0;
-      
-      // Draw hexagon
-      drawExportHexagon(ctx, adjustedCenter, dimensions.hexSize, fillColor, strokeColor, strokeWidth);
-      
-      // Draw hex content
-      if (hexCell) {
-        drawExportHexContent(ctx, adjustedCenter, hexCell, dimensions.hexSize, this.iconCache, options);
+    // Calculate SVG dimensions
+    const hexSize = appearance.hexSize;
+    const width = dimensions.width * hexSize * 1.5;
+    const height = dimensions.height * hexSize * Math.sqrt(3);
+
+    let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
+
+    // Add background
+    svg += `<rect width="100%" height="100%" fill="${appearance.backgroundColor}"/>`;
+
+    // Add hexes
+    cells.forEach((cell) => {
+      const { x, y } = hexToPixel(cell.coordinate, hexSize);
+      const terrainColor = appearance.terrainColors[cell.terrain];
+
+      // Create hex path
+      const points = this.getHexPoints(x, y, hexSize);
+      svg += `<polygon points="${points}" fill="${terrainColor}" stroke="${appearance.borderColor}" stroke-width="${appearance.borderWidth}"/>`;
+
+      // Add coordinates if requested
+      if (includeCoordinates) {
+        svg += `<text x="${x}" y="${y}" text-anchor="middle" font-size="${appearance.textSize}" fill="black">${cell.coordinate.q},${cell.coordinate.r}</text>`;
       }
-      
-      // Draw coordinates if enabled
-      if (options.layers.coordinates) {
-        drawExportCoordinates(ctx, hex, adjustedCenter, dimensions.hexSize);
-      }
-    }
-    
-    // Draw player positions
-    if (options.layers.playerPositions && mapData.playerPositions.length > 0) {
-      drawExportPlayerPositions(ctx, mapData.playerPositions, dimensions.hexSize, dimensions);
-    }
-    
-    // Draw watermark
-    if (options.watermark) {
-      drawExportWatermark(ctx, options.watermark, dimensions);
-    }
-    
-    return canvas;
+    });
+
+    svg += "</svg>";
+    return svg;
   }
 
   /**
-   * Get hexes to render based on export options
+   * Get hex polygon points for SVG
    */
-  private getHexesToRender(
-    mapData: MapData,
-    options: ExportOptions,
-    visibleHexes?: Set<string>
-  ): HexCoordinate[] {
-    if (options.area === 'full') {
-      // Return all hexes in the map
-      const hexes: HexCoordinate[] = [];
-      for (let row = 0; row < mapData.dimensions.height; row++) {
-        for (let col = 0; col < mapData.dimensions.width; col++) {
-          const q = col - Math.floor(row / 2);
-          const r = row;
-          hexes.push({ q, r });
-        }
-      }
-      return hexes;
-    } else if (options.area === 'visible' && visibleHexes) {
-      // Return only visible hexes
-      return Array.from(visibleHexes).map(key => {
-        const [q, r] = key.split(',').map(Number);
-        return { q, r };
-      });
-    } else if (options.area === 'selection' && options.selection) {
-      // Return hexes in selection
-      const hexes: HexCoordinate[] = [];
-      const { topLeft, bottomRight } = options.selection;
-      for (let r = topLeft.r; r <= bottomRight.r; r++) {
-        for (let q = topLeft.q; q <= bottomRight.q; q++) {
-          hexes.push({ q, r });
-        }
-      }
-      return hexes;
+  private getHexPoints(centerX: number, centerY: number, size: number): string {
+    const points: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i;
+      const x = centerX + size * Math.cos(angle);
+      const y = centerY + size * Math.sin(angle);
+      points.push(`${x},${y}`);
     }
-    
-    // Fallback to full map
-    return this.getHexesToRender(mapData, { ...options, area: 'full' }, visibleHexes);
-  }
-
-  /**
-   * Get hex fill color based on content and appearance settings
-   */
-  private getHexFillColor(hexCell: HexCell | undefined, appearance: any): string {
-    if (!hexCell) {
-      return appearance.backgroundColor;
-    }
-    
-    if (hexCell.terrain && appearance.terrainColors[hexCell.terrain]) {
-      return appearance.terrainColors[hexCell.terrain];
-    }
-    
-    return appearance.backgroundColor;
-  }
-
-  /**
-   * Convert canvas to PDF blob using jsPDF
-   */
-  private async canvasToPDF(canvas: HTMLCanvasElement, mapName: string): Promise<Blob> {
-    const imageData = canvas.toDataURL('image/png');
-    
-    // Calculate PDF dimensions (convert pixels to mm at 96 DPI)
-    const pxToMm = 0.264583; // 1 pixel = 0.264583 mm at 96 DPI
-    const widthMm = canvas.width * pxToMm;
-    const heightMm = canvas.height * pxToMm;
-    
-    // Determine orientation and page size
-    const isLandscape = widthMm > heightMm;
-    const orientation = isLandscape ? 'landscape' : 'portrait';
-    
-    // Use A4 as base, but scale if image is larger
-    const a4Width = 210; // mm
-    const a4Height = 297; // mm
-    
-    let pageWidth = isLandscape ? a4Height : a4Width;
-    let pageHeight = isLandscape ? a4Width : a4Height;
-    
-    // If image is larger than A4, use custom page size
-    if (widthMm > pageWidth || heightMm > pageHeight) {
-      pageWidth = widthMm + 20; // Add 10mm margin on each side
-      pageHeight = heightMm + 20; // Add 10mm margin on each side
-    }
-    
-    // Create PDF
-    const pdf = new jsPDF({
-      orientation,
-      unit: 'mm',
-      format: [pageWidth, pageHeight]
-    });
-    
-    // Add title
-    pdf.setFontSize(16);
-    pdf.text(mapName, 10, 15);
-    
-    // Calculate image position to center it
-    const imgX = (pageWidth - widthMm) / 2;
-    const imgY = Math.max(25, (pageHeight - heightMm) / 2); // Leave space for title
-    
-    // Add image to PDF
-    pdf.addImage(imageData, 'PNG', imgX, imgY, widthMm, heightMm);
-    
-    // Add metadata
-    pdf.setProperties({
-      title: mapName,
-      subject: 'Hex Crawl Map',
-      author: 'Hex Crawl Maker',
-      creator: 'Hex Crawl Maker',
-      producer: 'Hex Crawl Maker'
-    });
-    
-    // Return as blob
-    return new Promise((resolve) => {
-      const pdfBlob = pdf.output('blob');
-      resolve(pdfBlob);
-    });
+    return points.join(" ");
   }
 
   /**
    * Batch export multiple versions of the map
    */
   async batchExport(
+    canvas: HTMLCanvasElement,
     mapData: MapData,
-    exportConfigs: ExportOptions[],
-    visibleHexes?: Set<string>
-  ): Promise<void> {
-    await this.initialize();
-    
-    for (const config of exportConfigs) {
+    mapName: string,
+    options: BatchExportOptions
+  ): Promise<{ [key: string]: Blob }> {
+    const results: { [key: string]: Blob } = {};
+
+    for (const format of options.formats) {
+      const exportOptions = { ...options.baseOptions, format };
+
       try {
-        if (config.format === 'png') {
-          await this.exportPNG(mapData, config, visibleHexes);
-        } else if (config.format === 'pdf') {
-          await this.exportPDF(mapData, config, visibleHexes);
+        let blob: Blob;
+        switch (format) {
+          case "png":
+            blob = await this.exportPNG(canvas, mapName, exportOptions);
+            break;
+          case "jpg":
+            blob = await this.exportJPG(canvas, mapName, exportOptions);
+            break;
+          case "svg":
+            blob = await this.exportSVG(mapData, mapName, exportOptions);
+            break;
+          case "pdf":
+            blob = await this.exportPDF(canvas, mapName, exportOptions);
+            break;
+          default:
+            continue;
         }
-        
-        // Small delay between exports to prevent browser blocking
-        await new Promise(resolve => setTimeout(resolve, 100));
+
+        results[format] = blob;
+
+        // Add high-res version if requested
+        if (options.includeHighRes && (format === "png" || format === "jpg")) {
+          const highResOptions = { ...exportOptions, scale: 2 };
+          const highResBlob =
+            format === "png"
+              ? await this.exportPNG(canvas, mapName, highResOptions)
+              : await this.exportJPG(canvas, mapName, highResOptions);
+          results[`${format}_2x`] = highResBlob;
+        }
       } catch (error) {
-        console.error(`Failed to export with config:`, config, error);
+        console.warn(`Failed to export ${format}:`, error);
       }
     }
+
+    return results;
   }
 
   /**
-   * Get preview of export dimensions
+   * Download blob as file
    */
-  getExportPreview(
-    mapData: MapData,
-    options: ExportOptions,
-    visibleHexes?: Set<string>
-  ): ExportDimensions {
-    return calculateExportDimensions(mapData, options, visibleHexes);
+  downloadBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Get appropriate file extension for format
+   */
+  getFileExtension(format: ExportOptions["format"]): string {
+    switch (format) {
+      case "png":
+        return ".png";
+      case "jpg":
+        return ".jpg";
+      case "svg":
+        return ".svg";
+      case "pdf":
+        return ".pdf";
+      default:
+        return ".png";
+    }
   }
 }
 
 // Export singleton instance
-export const exportService = new ExportService();
+export const exportService = ExportService.getInstance();
