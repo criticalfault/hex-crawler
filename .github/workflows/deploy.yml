@@ -22,19 +22,19 @@ jobs:
       # Install dependencies and build
       - name: Install dependencies
         run: npm install
-        working-directory: hex-crawler-maker
+        working-directory: hex-crawl-maker
 
       # Build the static site
       - name: Create static build
         run: npm run build
-        working-directory: hex-crawler-maker
+        working-directory: hex-crawl-maker
 
       # Upload the artifact for other stages to use
       - name: Share artifact in github workflow
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: hex-crawler-maker/dist
+          path: hex-crawl-maker/dist
 
   deploy:
     runs-on: ubuntu-latest
