@@ -18,22 +18,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "npm"
 
       # Install dependencies and build
       - name: Install dependencies
-        run: npm ci
+        run: npm install
+        working-directory: hex-crawler-maker
 
       # Build the static site
       - name: Create static build
         run: npm run build
+        working-directory: hex-crawler-maker
 
       # Upload the artifact for other stages to use
       - name: Share artifact in github workflow
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: dist
+          path: hex-crawler-maker/dist
 
   deploy:
     runs-on: ubuntu-latest
