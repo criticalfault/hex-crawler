@@ -18,15 +18,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "yarn"
+          cache: "npm"
 
       # Install dependencies and build
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       # Build the static site
       - name: Create static build
-        run: yarn build
+        run: npm run build
 
       # Upload the artifact for other stages to use
       - name: Share artifact in github workflow
