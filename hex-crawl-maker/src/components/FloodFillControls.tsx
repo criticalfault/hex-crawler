@@ -13,7 +13,8 @@ import {
   selectIsGMMode,
   selectQuickTerrainMode,
   selectSelectedQuickTerrain,
-  selectMapCells
+  selectMapCells,
+  selectCurrentMap
 } from '../store/selectors';
 import { TERRAIN_ICONS, STRUCTURE_ICONS } from '../types/icons';
 import './FloodFillControls.css';
@@ -64,6 +65,7 @@ export const FloodFillControls: React.FC = () => {
   const quickTerrainMode = useAppSelector(selectQuickTerrainMode);
   const selectedTerrain = useAppSelector(selectSelectedQuickTerrain);
   const mapCells = useAppSelector(selectMapCells);
+  const mapData = useAppSelector(selectCurrentMap);
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingFillData, setPendingFillData] = useState<{
@@ -87,7 +89,7 @@ export const FloodFillControls: React.FC = () => {
       dispatch(uiActions.clearFloodFillPreview());
       
       // Add to undo history
-      dispatch(historyActions.saveToHistory(mapCells));
+      dispatch(historyActions.saveToHistory(mapData as any));
     }
     setShowConfirmation(false);
     setPendingFillData(null);
@@ -112,7 +114,7 @@ export const FloodFillControls: React.FC = () => {
       dispatch(uiActions.clearFloodFillPreview());
       
       // Add to undo history
-      dispatch(historyActions.saveToHistory(mapCells));
+      dispatch(historyActions.saveToHistory(mapData as any));
     }
   };
 

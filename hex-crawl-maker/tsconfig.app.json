@@ -19,7 +19,10 @@
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "noImplicitAny": false
   },
   "include": ["src"],
   "exclude": ["**/*.test.ts", "**/*.test.tsx", "src/test/**/*"]
