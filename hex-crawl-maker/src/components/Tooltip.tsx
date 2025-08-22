@@ -106,22 +106,22 @@ export const Tooltip: React.FC<TooltipProps> = ({
   }, []);
 
   // Clone the child element to add event handlers
-  const childElement = React.cloneElement(children, {
+  const childElement = React.cloneElement(children as any, {
     onMouseEnter: (e: React.MouseEvent) => {
       showTooltip();
-      children.props.onMouseEnter?.(e);
+      (children as any).props?.onMouseEnter?.(e);
     },
     onMouseLeave: (e: React.MouseEvent) => {
       hideTooltip();
-      children.props.onMouseLeave?.(e);
+      (children as any).props?.onMouseLeave?.(e);
     },
     onFocus: (e: React.FocusEvent) => {
       showTooltip();
-      children.props.onFocus?.(e);
+      (children as any).props?.onFocus?.(e);
     },
     onBlur: (e: React.FocusEvent) => {
       hideTooltip();
-      children.props.onBlur?.(e);
+      (children as any).props?.onBlur?.(e);
     },
   });
 

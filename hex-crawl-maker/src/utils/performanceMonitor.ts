@@ -304,7 +304,7 @@ export const withPerformanceMonitoring = <P extends object>(
       }
     });
 
-    return React.createElement(WrappedComponent, { ...props, ref });
+    return React.createElement(WrappedComponent, { ...props, ref } as any);
   });
 };
 

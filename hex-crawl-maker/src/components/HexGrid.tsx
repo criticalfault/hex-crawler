@@ -1000,7 +1000,7 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
 
         // Set up long press detection
         const timer = setTimeout(() => {
-          const hex = getHexFromTouch(touch);
+          const hex = getHexFromTouch(touch as any);
           if (hex && isHexInBounds(hex)) {
             triggerHapticFeedback('heavy');
             
@@ -1033,8 +1033,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
         clearLongPressTimer();
         setIsPanning(false);
         
-        const distance = getTouchDistance(touches);
-        const center = getTouchCenter(touches);
+        const distance = getTouchDistance(touches as any);
+        const center = getTouchCenter(touches as any);
         
         setPinchStartDistance(distance);
         setPinchStartZoom(zoom);
@@ -1098,8 +1098,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
         
       } else if (touches.length === 2 && pinchStartDistance && lastPanPoint) {
         // Two touch movement - pinch zoom and pan
-        const currentDistance = getTouchDistance(touches);
-        const currentCenter = getTouchCenter(touches);
+        const currentDistance = getTouchDistance(touches as any);
+        const currentCenter = getTouchCenter(touches as any);
         
         // Handle zoom
         const scale = currentDistance / pinchStartDistance;
@@ -1170,7 +1170,7 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
         if (distance < 10) {
           triggerHapticFeedback('light');
           
-          const hex = getHexFromTouch(touch);
+          const hex = getHexFromTouch(touch as any);
           if (hex && isHexInBounds(hex)) {
             if (isPlayerMode) {
               // Player mode tap - move player

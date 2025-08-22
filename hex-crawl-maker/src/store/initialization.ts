@@ -75,7 +75,17 @@ export function initializeStore() {
 
   // Load exploration state
   if (explorationState) {
-    store.dispatch(explorationActions.setExplorationState(explorationState));
+    // Convert Sets to Arrays if needed
+    const convertedState = {
+      ...explorationState,
+      exploredHexes: Array.isArray(explorationState.exploredHexes) 
+        ? explorationState.exploredHexes 
+        : Array.from(explorationState.exploredHexes || []),
+      visibleHexes: Array.isArray(explorationState.visibleHexes)
+        ? explorationState.visibleHexes
+        : Array.from(explorationState.visibleHexes || [])
+    };
+    store.dispatch(explorationActions.setExplorationState(convertedState as any));
   }
 
   // Load UI preferences
