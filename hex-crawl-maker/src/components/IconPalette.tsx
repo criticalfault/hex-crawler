@@ -19,11 +19,22 @@ const PaletteContainer = styled.div`
 `;
 
 const PaletteTitle = styled.h3`
-  margin: 0 0 16px 0;
+  margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 600;
   color: #343a40;
   text-align: center;
+`;
+
+const PaletteInstructions = styled.div`
+  margin: 0 0 16px 0;
+  padding: 8px;
+  background: #e3f2fd;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #1565c0;
+  text-align: center;
+  line-height: 1.3;
 `;
 
 const CategorySection = styled.div`
@@ -179,6 +190,10 @@ export const IconPalette: React.FC<IconPaletteProps> = ({ className }) => {
   return (
     <PaletteContainer className={className}>
       <PaletteTitle>Icon Palette</PaletteTitle>
+      <PaletteInstructions>
+        💡 <strong>Drag & Drop:</strong> Drag icons onto hexes to place them<br/>
+        🎯 <strong>Quick Keys:</strong> Press 1-8 for instant terrain selection
+      </PaletteInstructions>
       {renderIconCategory('Terrain', TERRAIN_ICONS)}
       {renderIconCategory('Structures', STRUCTURE_ICONS)}
       {renderIconCategory('Markers', MARKER_ICONS)}

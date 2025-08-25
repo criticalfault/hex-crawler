@@ -1,0 +1,262 @@
+/**
+ * Onboarding overlay styles
+ */
+
+.onboarding-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+.onboarding-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  pointer-events: all;
+}
+
+.onboarding-tooltip {
+  position: absolute;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 400px;
+  min-width: 300px;
+  pointer-events: all;
+  z-index: 100001;
+  animation: onboarding-fade-in 0.3s ease-out;
+}
+
+@keyframes onboarding-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.onboarding-tooltip--center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.onboarding-tooltip--top {
+  /* Position will be set via inline styles */
+}
+
+.onboarding-tooltip--bottom {
+  /* Position will be set via inline styles */
+}
+
+.onboarding-tooltip--left {
+  /* Position will be set via inline styles */
+}
+
+.onboarding-tooltip--right {
+  /* Position will be set via inline styles */
+}
+
+.onboarding-tooltip__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 0 20px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 16px;
+}
+
+.onboarding-tooltip__header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.onboarding-tooltip__close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.onboarding-tooltip__close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.onboarding-tooltip__content {
+  padding: 0 20px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.onboarding-tooltip__content p {
+  margin: 0 0 12px 0;
+}
+
+.onboarding-tooltip__content p:last-child {
+  margin-bottom: 0;
+}
+
+.onboarding-tooltip__content ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.onboarding-tooltip__content li {
+  margin: 4px 0;
+}
+
+.onboarding-tooltip__content kbd {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-family: monospace;
+  color: #374151;
+}
+
+.onboarding-tooltip__footer {
+  padding: 20px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 16px;
+}
+
+.onboarding-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.onboarding-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.onboarding-progress-fill {
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.onboarding-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.onboarding-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.onboarding-button--primary {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.onboarding-button--primary:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.onboarding-button--secondary {
+  background: white;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.onboarding-button--secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .onboarding-tooltip {
+    max-width: calc(100vw - 40px);
+    min-width: calc(100vw - 40px);
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    right: auto !important;
+    bottom: auto !important;
+  }
+
+  .onboarding-actions {
+    flex-direction: column;
+  }
+
+  .onboarding-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .onboarding-tooltip {
+    border: 2px solid #000;
+  }
+  
+  .onboarding-button--primary {
+    background: #000;
+    border-color: #000;
+  }
+  
+  .onboarding-button--secondary {
+    background: #fff;
+    color: #000;
+    border-color: #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-tooltip {
+    animation: none;
+  }
+  
+  .onboarding-progress-fill {
+    transition: none;
+  }
+  
+  .onboarding-button {
+    transition: none;
+  }
+}

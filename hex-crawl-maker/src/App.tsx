@@ -33,6 +33,11 @@ import { GMControls } from './components/GMControls';
 import { KeyboardShortcutsOverlay } from './components/KeyboardShortcutsOverlay';
 import { TemplateDialog } from './components/TemplateDialog';
 import { BiomeGenerator } from './components/BiomeGenerator';
+import { OnboardingOverlay } from './components/OnboardingOverlay';
+import { ContextualHints } from './components/ContextualHints';
+import { QuickHelpButton } from './components/QuickHelpButton';
+import { WhatsNewBanner } from './components/WhatsNewBanner';
+import { StatusIndicator } from './components/StatusIndicator';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { isTouchDevice } from './utils/touchUtils';
 import './App.css';
@@ -203,6 +208,13 @@ function AppContent() {
           onClose={handleCloseShortcutsOverlay} 
         />
       )}
+      
+      {/* Enhanced user guidance */}
+      <WhatsNewBanner />
+      <OnboardingOverlay />
+      <ContextualHints />
+      <StatusIndicator />
+      <QuickHelpButton />
     </div>
   );
 }

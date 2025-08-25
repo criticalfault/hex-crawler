@@ -79,9 +79,21 @@ export const HelpSystem: React.FC = () => {
           <div className="help-section">
             <h3>Getting Started</h3>
             <div className="help-content">
+              <p><strong>New to Hex Crawl Maker?</strong> Press <kbd>Ctrl+Shift+H</kbd> to restart the interactive tutorial!</p>
               <p><strong>GM Mode:</strong> Create your hex crawl by dragging icons from the palette onto the grid. Click on hexes to add names, descriptions, and GM notes.</p>
               <p><strong>Player Mode:</strong> Switch to this mode during gameplay. Only explored areas are visible. Click to move players and reveal new hexes based on sight distance.</p>
               <p><strong>Projection Mode:</strong> Optimized for streaming or projecting to players with high contrast colors and larger text.</p>
+              
+              <div style="margin-top: 16px; padding: 12px; background: #e3f2fd; border-radius: 6px; border-left: 4px solid #2196f3;">
+                <p style="margin: 0; font-size: 14px;"><strong>💡 Quick Start:</strong></p>
+                <ol style="margin: 8px 0 0 0; padding-left: 20px; font-size: 14px;">
+                  <li>Try the Template button to generate a starting landscape</li>
+                  <li>Drag terrain icons from the palette onto hexes</li>
+                  <li>Click hexes to add names and descriptions</li>
+                  <li>Switch to Player Mode to test exploration</li>
+                  <li>Use the ? button (bottom right) for quick reference</li>
+                </ol>
+              </div>
             </div>
           </div>
 
@@ -133,9 +145,14 @@ export const HelpSystem: React.FC = () => {
               <ul>
                 <li><strong>Sight Distance:</strong> In Player Mode, adjust the sight distance slider to control how far players can see (1-5 hexes).</li>
                 <li><strong>Reveal Modes:</strong> Choose between "Permanent" (keeps revealed areas visible) or "Line of Sight" (only shows currently visible areas).</li>
+                <li><strong>Quick Terrain:</strong> Enable Quick Terrain mode, then click any hex with terrain to select that type for fast painting.</li>
+                <li><strong>Brush Tools:</strong> Use brush mode (B key) to paint multiple hexes at once. Adjust brush size with Shift+1-4.</li>
+                <li><strong>Templates:</strong> Use the Template button to generate procedural biomes or apply pre-made terrain patterns.</li>
                 <li><strong>Map Management:</strong> Save multiple maps and switch between them using the Map Manager.</li>
+                <li><strong>Export Options:</strong> Export your maps as high-resolution PNG for digital use or PDF for printing.</li>
                 <li><strong>Projection Setup:</strong> Use Projection Mode + Fullscreen for optimal display during live sessions.</li>
-                <li><strong>Responsive Design:</strong> The interface adapts to different screen sizes and orientations.</li>
+                <li><strong>Mobile Support:</strong> The interface adapts to touch devices with gesture controls and mobile-optimized layouts.</li>
+                <li><strong>Accessibility:</strong> All features support keyboard navigation and screen readers.</li>
               </ul>
             </div>
           </div>

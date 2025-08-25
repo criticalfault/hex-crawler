@@ -13,6 +13,7 @@ import { SelectionTool } from './SelectionTool';
 import { PatternLibrary } from './PatternLibrary';
 import { ExportButton } from './ExportButton';
 import { TemplateButton } from './TemplateButton';
+import { Tooltip } from './Tooltip';
 import './GMControls.css';
 
 export const GMControls: React.FC = () => {
@@ -51,13 +52,14 @@ export const GMControls: React.FC = () => {
       </div>
 
       <div className="control-section">
-        <button 
-          onClick={handleResetExploration}
-          className="reset-exploration-button"
-          title="Clear all explored hexes and reset player sight lines"
-        >
-          🔄 Reset Exploration
-        </button>
+        <Tooltip content="Clear all explored hexes and reset player sight lines. Useful for testing exploration mechanics or starting fresh." position="top">
+          <button 
+            onClick={handleResetExploration}
+            className="reset-exploration-button"
+          >
+            🔄 Reset Exploration
+          </button>
+        </Tooltip>
         <div className="control-description">
           Clears all explored hexes and resets player sight lines for testing
         </div>
@@ -73,13 +75,14 @@ export const GMControls: React.FC = () => {
 
       <div className="control-section">
         <div className="quick-terrain-header">
-          <button 
-            onClick={toggleQuickTerrainMode}
-            className={`quick-terrain-toggle ${quickTerrainMode ? 'active' : ''}`}
-            title="Toggle quick terrain placement mode"
-          >
-            🎨 Quick Terrain {quickTerrainMode ? 'ON' : 'OFF'}
-          </button>
+          <Tooltip content="Quick Terrain Mode: Click any hex with terrain to select that terrain type, then paint other hexes by clicking them. Great for fast terrain painting!" position="top">
+            <button 
+              onClick={toggleQuickTerrainMode}
+              className={`quick-terrain-toggle ${quickTerrainMode ? 'active' : ''}`}
+            >
+              🎨 Quick Terrain {quickTerrainMode ? 'ON' : 'OFF'}
+            </button>
+          </Tooltip>
         </div>
         
         {quickTerrainMode && (

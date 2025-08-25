@@ -289,8 +289,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
       const img = iconCache.get(iconType);
       if (!img) return;
 
-      // Calculate icon size (about 60% of hex size)
-      const iconSize = hexSize * 0.6;
+      // Calculate icon size (about 80% of hex size)
+      const iconSize = hexSize * 0.8;
 
       // Draw the icon centered in the hex
       ctx.drawImage(

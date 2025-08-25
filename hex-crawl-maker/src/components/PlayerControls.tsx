@@ -11,6 +11,7 @@ import {
   selectCurrentMode 
 } from '../store/selectors';
 import { hexesInRange } from '../utils/hexCoordinates';
+import { Tooltip } from './Tooltip';
 import type { HexCoordinate } from '../types';
 import './PlayerControls.css';
 
@@ -92,9 +93,11 @@ export const PlayerControls: React.FC = () => {
       </div>
 
       <div className="control-section">
-        <label htmlFor="sight-distance">
-          Sight Distance: {sightDistance} hex{sightDistance !== 1 ? 'es' : ''}
-        </label>
+        <Tooltip content="How far players can see from their position. Higher values reveal more hexes around each player." position="top">
+          <label htmlFor="sight-distance">
+            Sight Distance: {sightDistance} hex{sightDistance !== 1 ? 'es' : ''}
+          </label>
+        </Tooltip>
         <input
           id="sight-distance"
           type="range"
@@ -116,18 +119,22 @@ export const PlayerControls: React.FC = () => {
       <div className="control-section">
         <label>Reveal Mode:</label>
         <div className="reveal-mode-toggle">
-          <button
-            className={`toggle-button ${revealMode === 'permanent' ? 'active' : ''}`}
-            onClick={() => handleRevealModeChange('permanent')}
-          >
-            Permanent
-          </button>
-          <button
-            className={`toggle-button ${revealMode === 'lineOfSight' ? 'active' : ''}`}
-            onClick={() => handleRevealModeChange('lineOfSight')}
-          >
-            Line of Sight
-          </button>
+          <Tooltip content="Permanent: Once explored, hexes stay visible even when players move away. Good for traditional exploration." position="top">
+            <button
+              className={`toggle-button ${revealMode === 'permanent' ? 'active' : ''}`}
+              onClick={() => handleRevealModeChange('permanent')}
+            >
+              Permanent
+            </button>
+          </Tooltip>
+          <Tooltip content="Line of Sight: Only hexes currently within sight distance are visible. More realistic but can be confusing." position="top">
+            <button
+              className={`toggle-button ${revealMode === 'lineOfSight' ? 'active' : ''}`}
+              onClick={() => handleRevealModeChange('lineOfSight')}
+            >
+              Line of Sight
+            </button>
+          </Tooltip>
         </div>
         <div className="reveal-mode-description">
           {revealMode === 'permanent' 
