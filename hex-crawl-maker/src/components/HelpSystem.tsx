@@ -84,9 +84,9 @@ export const HelpSystem: React.FC = () => {
               <p><strong>Player Mode:</strong> Switch to this mode during gameplay. Only explored areas are visible. Click to move players and reveal new hexes based on sight distance.</p>
               <p><strong>Projection Mode:</strong> Optimized for streaming or projecting to players with high contrast colors and larger text.</p>
               
-              <div style="margin-top: 16px; padding: 12px; background: #e3f2fd; border-radius: 6px; border-left: 4px solid #2196f3;">
-                <p style="margin: 0; font-size: 14px;"><strong>💡 Quick Start:</strong></p>
-                <ol style="margin: 8px 0 0 0; padding-left: 20px; font-size: 14px;">
+              <div style={{ marginTop: '16px', padding: '12px', background: '#e3f2fd', borderRadius: '6px', borderLeft: '4px solid #2196f3' }}>
+                <p style={{ margin: 0, fontSize: '14px' }}><strong>💡 Quick Start:</strong></p>
+                <ol style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '14px' }}>
                   <li>Try the Template button to generate a starting landscape</li>
                   <li>Drag terrain icons from the palette onto hexes</li>
                   <li>Click hexes to add names and descriptions</li>
