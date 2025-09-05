@@ -102,10 +102,12 @@ export const hexCellUtils = {
     
     if (!hexCell) return false;
     
+    // Use the visibility properties if they exist on the hex cell
+    // (they should be added by the caller when needed)
     if (revealMode === 'permanent') {
-      return hexCell.isExplored;
+      return hexCell.isExplored || false;
     } else {
-      return hexCell.isVisible;
+      return hexCell.isVisible || false;
     }
   },
 

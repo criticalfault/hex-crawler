@@ -420,8 +420,16 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
 
       // Use utility functions to determine appearance
       const isPreview = isBrushPreview || isFloodFillPreview || isPastePreview;
+      
+      // Create a hex cell with visibility information for color calculation
+      const hexCellWithVisibility = hexCell ? {
+        ...hexCell,
+        isExplored: visibility.isExplored,
+        isVisible: visibility.isCurrentlyVisible
+      } : null;
+      
       const fillColor = hexCellUtils.getHexFillColor(
-        hexCell || null,
+        hexCellWithVisibility,
         isHovered || isDragOver || isPreview,
         isSelected,
         appearance,
