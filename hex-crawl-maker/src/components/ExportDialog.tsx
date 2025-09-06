@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppSelector } from '../store';
 import { selectCurrentMap, selectVisibleHexes, selectExploredHexes } from '../store/selectors';
 import { exportService } from '../services/exportService';
@@ -133,7 +134,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
 
   if (!isOpen || !mapData) return null;
 
-  return (
+  const modalContent = (
     <div className="export-dialog-overlay">
       <div className="export-dialog">
         <div className="export-dialog-header">
@@ -473,4 +474,6 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
