@@ -28,6 +28,7 @@ import { MapManager } from './components/MapManager';
 import { MapManagerButton } from './components/MapManagerButton';
 import { HelpSystem } from './components/HelpSystem';
 import { UndoRedoControls } from './components/UndoRedoControls';
+import { addTestLandmarks, removeTestLandmarks } from './utils/testLandmarks';
 import { AnimatedTransition } from './components/AnimatedTransition';
 import { GMControls } from './components/GMControls';
 import { KeyboardShortcutsOverlay } from './components/KeyboardShortcutsOverlay';
@@ -69,6 +70,16 @@ function AppContent() {
 
   useEffect(() => {
     initializeStore();
+    
+    // In development mode, make test landmark functions available globally
+    if (import.meta.env?.DEV) {
+      (window as any).addTestLandmarks = addTestLandmarks;
+      (window as any).removeTestLandmarks = removeTestLandmarks;
+      console.log('🏰 Landmark Tooltip Testing:');
+      console.log('  - Run addTestLandmarks() to add test landmarks');
+      console.log('  - Switch to Player Mode and hover over landmarks to see tooltips');
+      console.log('  - Run removeTestLandmarks() to clean up');
+    }
   }, []);
 
   // Handle mode transition animation

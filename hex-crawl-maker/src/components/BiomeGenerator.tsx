@@ -21,18 +21,7 @@ export const BiomeGenerator: React.FC = () => {
 
   const { currentMap } = useAppSelector(state => state.map);
 
-  const [previewDimensions, setPreviewDimensions] = useState({ width: 10, height: 10 });
-  const [targetCoordinate, setTargetCoordinate] = useState<HexCoordinate>({ q: 0, r: 0 });
-
-  // Update target coordinate when map changes
-  useEffect(() => {
-    if (currentMap) {
-      setTargetCoordinate({
-        q: Math.floor(currentMap.dimensions.width / 2),
-        r: Math.floor(currentMap.dimensions.height / 2)
-      });
-    }
-  }, [currentMap]);
+  // No need for preview dimensions or target coordinates - we'll fill the entire map
 
   const handleClose = () => {
     dispatch(templateActions.closeBiomeGenerator());
@@ -43,10 +32,26 @@ export const BiomeGenerator: React.FC = () => {
   };
 
   const handleGeneratePreview = () => {
+    if (!currentMap) return;
+    
     dispatch(templateActions.setIsGeneratingBiome(true));
     
     try {
-      const cells = TemplateService.generateBiome(previewDimensions, biomeGeneratorConfig);
+      // Generate ALL hex coordinates that should exist on the grid
+      // Use the same logic as HexGrid to ensure we fill every visible hex
+      const allGridCoordinates: HexCoordinate[] = [];
+      
+      for (let row = 0; row < currentMap.dimensions.height; row++) {
+        for (let col = 0; col < currentMap.dimensions.width; col++) {
+          // Use the same coordinate generation as HexGrid
+          const q = col - Math.floor(row / 2);
+          const r = row;
+          allGridCoordinates.push({ q, r });
+        }
+      }
+      
+      // Generate biome for ALL grid coordinates (including empty/white hexes)
+      const cells = TemplateService.generateBiomeForCoordinates(allGridCoordinates, biomeGeneratorConfig);
       dispatch(templateActions.setGeneratedBiomeCells(cells));
     } catch (error) {
       console.error('Error generating biome:', error);
@@ -58,18 +63,16 @@ export const BiomeGenerator: React.FC = () => {
   const handleApplyBiome = () => {
     if (!currentMap || generatedBiomeCells.length === 0) return;
 
-    // Apply generated cells to the map at target coordinate
+    // Apply generated cells directly to the map (they're already in the correct coordinates)
     generatedBiomeCells.forEach(cell => {
-      const finalCoord = {
-        q: cell.coordinate.q + targetCoordinate.q,
-        r: cell.coordinate.r + targetCoordinate.r
-      };
-
-      // Check bounds
-      if (finalCoord.q >= 0 && finalCoord.q < currentMap.dimensions.width &&
-          finalCoord.r >= 0 && finalCoord.r < currentMap.dimensions.height) {
+      // Check if coordinate is within map bounds using proper hex coordinate bounds checking
+      const row = cell.coordinate.r;
+      const col = cell.coordinate.q + Math.floor(row / 2);
+      
+      if (row >= 0 && row < currentMap.dimensions.height &&
+          col >= 0 && col < currentMap.dimensions.width) {
         dispatch(mapActions.placeIcon({
-          coordinate: finalCoord,
+          coordinate: cell.coordinate,
           terrain: cell.terrain,
           landmark: cell.landmark,
           name: cell.name,
@@ -119,7 +122,7 @@ export const BiomeGenerator: React.FC = () => {
 
             <div className="control-group">
               <label>
-                Terrain Density:
+                Terrain Consistency:
                 <input
                   type="range"
                   min="0.1"
@@ -130,6 +133,7 @@ export const BiomeGenerator: React.FC = () => {
                 />
                 <span>{Math.round(biomeGeneratorConfig.density * 100)}%</span>
               </label>
+              <p className="help-text">Higher values = more consistent terrain, lower values = more variation</p>
             </div>
 
             <div className="control-group">
@@ -179,61 +183,22 @@ export const BiomeGenerator: React.FC = () => {
               </label>
             </div>
 
-            <div className="control-group">
-              <label>
-                Preview Size:
-                <div className="dimension-controls">
-                  <input
-                    type="number"
-                    min="3"
-                    max="20"
-                    value={previewDimensions.width}
-                    onChange={(e) => setPreviewDimensions(prev => ({ ...prev, width: parseInt(e.target.value) }))}
-                  />
-                  ×
-                  <input
-                    type="number"
-                    min="3"
-                    max="20"
-                    value={previewDimensions.height}
-                    onChange={(e) => setPreviewDimensions(prev => ({ ...prev, height: parseInt(e.target.value) }))}
-                  />
-                </div>
-              </label>
-            </div>
-
             {currentMap && (
               <div className="control-group">
                 <label>
-                  Target Position:
-                  <div className="coordinate-controls">
-                    <input
-                      type="number"
-                      min="0"
-                      max={currentMap.dimensions.width - 1}
-                      value={targetCoordinate.q}
-                      onChange={(e) => setTargetCoordinate(prev => ({ ...prev, q: parseInt(e.target.value) }))}
-                    />
-                    ,
-                    <input
-                      type="number"
-                      min="0"
-                      max={currentMap.dimensions.height - 1}
-                      value={targetCoordinate.r}
-                      onChange={(e) => setTargetCoordinate(prev => ({ ...prev, r: parseInt(e.target.value) }))}
-                    />
-                  </div>
+                  Map Size: {currentMap.dimensions.width} × {currentMap.dimensions.height}
                 </label>
+                <p className="help-text">The biome will fill your entire current map.</p>
               </div>
             )}
 
             <div className="generation-actions">
               <button
                 onClick={handleGeneratePreview}
-                disabled={isGeneratingBiome}
+                disabled={isGeneratingBiome || !currentMap}
                 className="generate-button"
               >
-                {isGeneratingBiome ? 'Generating...' : 'Generate Preview'}
+                {isGeneratingBiome ? 'Generating...' : 'Generate Full Map Biome'}
               </button>
             </div>
           </div>
@@ -241,18 +206,20 @@ export const BiomeGenerator: React.FC = () => {
           <div className="biome-preview">
             <h3>Preview</h3>
             
-            {generatedBiomeCells.length > 0 ? (
+            {generatedBiomeCells.length > 0 && currentMap ? (
               <div className="preview-container">
                 <div 
                   className="biome-preview-grid"
                   style={{
-                    gridTemplateColumns: `repeat(${previewDimensions.width}, 1fr)`,
-                    aspectRatio: `${previewDimensions.width} / ${previewDimensions.height}`
+                    gridTemplateColumns: `repeat(${currentMap.dimensions.width}, 1fr)`,
+                    aspectRatio: `${currentMap.dimensions.width} / ${currentMap.dimensions.height}`,
+                    maxWidth: '400px',
+                    maxHeight: '400px'
                   }}
                 >
-                  {Array.from({ length: previewDimensions.width * previewDimensions.height }).map((_, i) => {
-                    const q = i % previewDimensions.width;
-                    const r = Math.floor(i / previewDimensions.width);
+                  {Array.from({ length: currentMap.dimensions.width * currentMap.dimensions.height }).map((_, i) => {
+                    const q = i % currentMap.dimensions.width;
+                    const r = Math.floor(i / currentMap.dimensions.width);
                     const cell = generatedBiomeCells.find(c => c.coordinate.q === q && c.coordinate.r === r);
                     
                     return (
@@ -288,7 +255,7 @@ export const BiomeGenerator: React.FC = () => {
               </div>
             ) : (
               <div className="empty-preview">
-                <p>Click "Generate Preview" to see the biome</p>
+                <p>Click "Generate Full Map Biome" to create a biome for your entire map</p>
               </div>
             )}
           </div>

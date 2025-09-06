@@ -53,6 +53,7 @@ import { getBrushHexes } from "../utils/brushUtils";
 import { floodFillHexes, getFloodFillPreview } from "../utils/floodFillUtils";
 import { getHexesInRectangularSelection } from "../utils/copyPasteUtils";
 import { hexCellUtils } from "./HexCell";
+import { LandmarkTooltip } from "./LandmarkTooltip";
 import type { HexCoordinate, PixelCoordinate, HexCell } from "../types/hex";
 import type { DragData } from "../types/icons";
 import { ALL_ICONS } from "../types/icons";
@@ -74,6 +75,15 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
   const [iconCache, setIconCache] = useState<Map<string, HTMLImageElement>>(
     new Map()
   );
+  const [tooltipState, setTooltipState] = useState<{
+    isVisible: boolean;
+    position: { x: number; y: number };
+    hexCell: HexCell | null;
+  }>({
+    isVisible: false,
+    position: { x: 0, y: 0 },
+    hexCell: null,
+  });
 
   // Redux state
   const dispatch = useAppDispatch();
@@ -342,6 +352,88 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     []
   );
 
+  // Draw landmark indicator on a hex (question mark circle for player mode)
+  const drawLandmarkIndicator = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      center: PixelCoordinate,
+      hexSize: number
+    ) => {
+      const indicatorSize = hexSize * 0.3; // Slightly larger for better visibility
+      const indicatorOffset = hexSize * 0.55; // Slightly closer to center
+      
+      // Position the indicator in the top-right area of the hex
+      const indicatorCenter = {
+        x: center.x + indicatorOffset * 0.8,
+        y: center.y - indicatorOffset * 0.8,
+      };
+
+      // Draw background circle with subtle shadow effect
+      ctx.beginPath();
+      ctx.arc(indicatorCenter.x + 1, indicatorCenter.y + 1, indicatorSize / 2, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.2)"; // Shadow
+      ctx.fill();
+
+      // Draw main background circle
+      ctx.beginPath();
+      ctx.arc(indicatorCenter.x, indicatorCenter.y, indicatorSize / 2, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(255, 215, 0, 0.95)"; // Slightly more opaque gold background
+      ctx.fill();
+      ctx.strokeStyle = "#b8860b"; // Darker gold border
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Draw question mark
+      ctx.fillStyle = "#654321"; // Darker brown text for better contrast
+      ctx.font = `bold ${Math.max(10, indicatorSize * 0.75)}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("?", indicatorCenter.x, indicatorCenter.y);
+    },
+    []
+  );
+
+  // Draw GM landmark indicator on a hex (star icon for GM mode)
+  const drawGMLandmarkIndicator = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      center: PixelCoordinate,
+      hexSize: number
+    ) => {
+      const indicatorSize = hexSize * 0.25;
+      const indicatorOffset = hexSize * 0.6;
+      
+      // Position the indicator in the top-right area of the hex
+      const indicatorCenter = {
+        x: center.x + indicatorOffset * 0.7,
+        y: center.y - indicatorOffset * 0.7,
+      };
+
+      // Draw background circle with subtle shadow effect
+      ctx.beginPath();
+      ctx.arc(indicatorCenter.x + 1, indicatorCenter.y + 1, indicatorSize / 2, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.15)"; // Subtle shadow
+      ctx.fill();
+
+      // Draw main background circle
+      ctx.beginPath();
+      ctx.arc(indicatorCenter.x, indicatorCenter.y, indicatorSize / 2, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(70, 130, 180, 0.9)"; // Steel blue background
+      ctx.fill();
+      ctx.strokeStyle = "#4682b4"; // Steel blue border
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Draw star symbol
+      ctx.fillStyle = "#ffffff"; // White star for contrast
+      ctx.font = `bold ${Math.max(8, indicatorSize * 0.7)}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("★", indicatorCenter.x, indicatorCenter.y);
+    },
+    []
+  );
+
   // Main render function
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -526,6 +618,32 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
         }
       });
 
+      // Draw landmark indicator in player mode if hex has a landmark with name/description
+      if (
+        isPlayerMode &&
+        hexCell?.landmark &&
+        visibility.shouldShow &&
+        (hexCell.name || hexCell.description)
+      ) {
+        // Make indicator slightly transparent if not currently visible
+        if (visibility.isExplored && !visibility.isCurrentlyVisible) {
+          ctx.globalAlpha = 0.6;
+        }
+
+        drawLandmarkIndicator(ctx, pixelPos, appearance.hexSize);
+
+        // Reset alpha
+        ctx.globalAlpha = 1.0;
+      }
+
+      // Draw landmark indicator in GM mode if hex has a landmark
+      if (
+        isGMMode &&
+        hexCell?.landmark
+      ) {
+        drawGMLandmarkIndicator(ctx, pixelPos, appearance.hexSize);
+      }
+
       // Draw hex coordinates if enabled or in debug mode (only in GM mode or if explicitly enabled)
       const isDevelopment = import.meta.env?.DEV || false;
       if ((showCoordinates || isDevelopment) && (isGMMode || showCoordinates)) {
@@ -557,6 +675,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     drawHexagon,
     drawHexIcon,
     drawPlayerToken,
+    drawLandmarkIndicator,
+    drawGMLandmarkIndicator,
     hoveredHex,
     selectedHex,
     showCoordinates,
@@ -845,12 +965,38 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
                 updatePastePreview(dispatch, hex);
               });
             }
+
+            // Update landmark tooltip in player mode
+            if (isPlayerMode) {
+              const hexKey = `${hex.q},${hex.r}`;
+              const hexCell = mapCells.get(hexKey);
+              const visibility = selectHexVisibility(hex)(store.getState());
+              
+              // Show tooltip if hex has a landmark and is visible to player
+              if (hexCell?.landmark && visibility.shouldShow && (hexCell.name || hexCell.description)) {
+                const rect = canvasRef.current?.getBoundingClientRect();
+                if (rect) {
+                  setTooltipState({
+                    isVisible: true,
+                    position: {
+                      x: event.clientX - rect.left + 15,
+                      y: event.clientY - rect.top - 10,
+                    },
+                    hexCell,
+                  });
+                }
+              } else {
+                setTooltipState(prev => ({ ...prev, isVisible: false }));
+              }
+            }
           }
         } else {
           // Clear hover state if mouse is outside grid
           if (hoveredHex) {
             setHoveredHex(null);
           }
+          // Hide landmark tooltip when outside grid
+          setTooltipState(prev => ({ ...prev, isVisible: false }));
           // Clear brush preview when outside grid
           if (brushMode && brushPreviewHexes.length > 0) {
             dispatch(uiActions.clearBrushPreview());
@@ -891,6 +1037,8 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
     setIsPanning(false);
     setLastPanPoint(null);
     setHoveredHex(null);
+    // Hide landmark tooltip
+    setTooltipState(prev => ({ ...prev, isVisible: false }));
     // Clear brush preview when leaving the canvas
     if (brushMode && brushPreviewHexes.length > 0) {
       dispatch(uiActions.clearBrushPreview());
@@ -1441,6 +1589,11 @@ export const HexGrid: React.FC<HexGridProps> = ({ className }) => {
           width: "100%",
           height: "100%",
         }}
+      />
+      <LandmarkTooltip
+        hexCell={tooltipState.hexCell}
+        position={tooltipState.position}
+        isVisible={tooltipState.isVisible}
       />
     </div>
   );

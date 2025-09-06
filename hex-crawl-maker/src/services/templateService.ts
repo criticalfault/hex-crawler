@@ -205,28 +205,79 @@ export class TemplateService {
       Object.assign(landmarkWeights, config.customLandmarkWeights);
     }
 
-    // Generate cells
+    // Generate cells from (0,0) to (width-1, height-1)
+    // For full map biomes, we fill every hex with terrain
     for (let q = 0; q < dimensions.width; q++) {
       for (let r = 0; r < dimensions.height; r++) {
         const coordinate: HexCoordinate = { q, r };
         
-        // Determine if this cell should have terrain
-        if (seededRandom() < config.density) {
-          const terrain = this.selectWeightedTerrain(terrainWeights, seededRandom);
-          
-          const cell: TemplateCell = {
-            coordinate,
-            terrain
-          };
+        // Every hex gets terrain
+        // Use density to control terrain consistency vs variation
+        const terrain = this.selectWeightedTerrain(terrainWeights, seededRandom, config.density);
+        
+        const cell: TemplateCell = {
+          coordinate,
+          terrain
+        };
 
-          // Add landmark chance
-          if (seededRandom() < config.landmarkChance) {
-            cell.landmark = this.selectWeightedLandmark(landmarkWeights, seededRandom);
-          }
-
-          cells.push(cell);
+        // Add landmark chance
+        if (seededRandom() < config.landmarkChance) {
+          cell.landmark = this.selectWeightedLandmark(landmarkWeights, seededRandom);
         }
+
+        cells.push(cell);
       }
+    }
+
+    return cells;
+  }
+
+  /**
+   * Generate procedural biome for specific coordinates
+   */
+  static generateBiomeForCoordinates(
+    coordinates: HexCoordinate[],
+    config: BiomeGeneratorConfig
+  ): TemplateCell[] {
+    const cells: TemplateCell[] = [];
+    const seed = config.seed || Math.random();
+    
+    // Simple seeded random number generator
+    let randomSeed = seed;
+    const seededRandom = () => {
+      randomSeed = (randomSeed * 9301 + 49297) % 233280;
+      return randomSeed / 233280;
+    };
+
+    // Get terrain weights for biome type
+    const terrainWeights = this.getBiomeTerrainWeights(config.biomeType);
+    const landmarkWeights = this.getBiomeLandmarkWeights(config.biomeType);
+
+    // Apply custom weights if provided
+    if (config.customTerrainWeights) {
+      Object.assign(terrainWeights, config.customTerrainWeights);
+    }
+    if (config.customLandmarkWeights) {
+      Object.assign(landmarkWeights, config.customLandmarkWeights);
+    }
+
+    // Generate cells for each provided coordinate
+    for (const coordinate of coordinates) {
+      // Every hex gets terrain
+      // Use density to control terrain consistency vs variation
+      const terrain = this.selectWeightedTerrain(terrainWeights, seededRandom, config.density);
+      
+      const cell: TemplateCell = {
+        coordinate,
+        terrain
+      };
+
+      // Add landmark chance
+      if (seededRandom() < config.landmarkChance) {
+        cell.landmark = this.selectWeightedLandmark(landmarkWeights, seededRandom);
+      }
+
+      cells.push(cell);
     }
 
     return cells;
@@ -467,11 +518,31 @@ export class TemplateService {
     return weights;
   }
 
-  private static selectWeightedTerrain(weights: Record<TerrainType, number>, random: () => number): TerrainType {
-    const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
+  private static selectWeightedTerrain(weights: Record<TerrainType, number>, random: () => number, density: number = 1.0): TerrainType {
+    // Higher density means more consistent terrain (stick to primary type)
+    // Lower density means more variation
+    const adjustedWeights = { ...weights };
+    
+    if (density < 1.0) {
+      // Find the primary terrain type (highest weight)
+      const primaryTerrain = Object.entries(weights).reduce((a, b) => weights[a[0]] > weights[b[0]] ? a : b)[0] as TerrainType;
+      
+      // Reduce primary terrain weight and distribute to others for more variation
+      const reduction = (1.0 - density) * 0.5;
+      adjustedWeights[primaryTerrain] = Math.max(0.1, weights[primaryTerrain] - reduction);
+      
+      // Boost other terrain types
+      const otherTerrains = Object.keys(weights).filter(t => t !== primaryTerrain) as TerrainType[];
+      const boost = reduction / otherTerrains.length;
+      otherTerrains.forEach(terrain => {
+        adjustedWeights[terrain] = weights[terrain] + boost;
+      });
+    }
+
+    const totalWeight = Object.values(adjustedWeights).reduce((sum, weight) => sum + weight, 0);
     let randomValue = random() * totalWeight;
 
-    for (const [terrain, weight] of Object.entries(weights)) {
+    for (const [terrain, weight] of Object.entries(adjustedWeights)) {
       randomValue -= weight;
       if (randomValue <= 0) {
         return terrain as TerrainType;
